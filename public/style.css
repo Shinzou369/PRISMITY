@@ -2334,6 +2334,121 @@ a:focus-visible {
   }
 }
 
+/* Login Modal Styles */
+.login-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.login-modal-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.login-modal-content {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-xl);
+  padding: 40px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border-color);
+  text-align: center;
+  transform: scale(0.9) translateY(20px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.login-modal-overlay.show .login-modal-content {
+  transform: scale(1) translateY(0);
+}
+
+.login-modal-header {
+  margin-bottom: 30px;
+}
+
+.login-modal-header .auth-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.login-modal-header .auth-logo img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.login-modal-header .auth-logo-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: var(--prismity-text-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-family: var(--font-heading);
+}
+
+.login-modal-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.login-modal-header p {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin-bottom: 0;
+}
+
+.login-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.google-login-modal-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #ffffff;
+  color: #1f2937;
+  border: 1px solid #d1d5db;
+  border-radius: var(--radius);
+  padding: 14px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.google-login-modal-btn:hover {
+  background: #f9fafb;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.google-login-modal-btn svg {
+  flex-shrink: 0;
+}
+
 /* Enhanced typing indicator animation */
 .typing-indicator {
   padding: 16px 20px !important;

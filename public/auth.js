@@ -49,6 +49,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function updateUIForLoggedInUser(user) {
+  // Set global login state
+  if (typeof isUserLoggedIn !== 'undefined') {
+    isUserLoggedIn = true;
+  }
+  
   // Update top navigation with user info
   updateTopNavForUser(user);
   
@@ -60,9 +65,19 @@ function updateUIForLoggedInUser(user) {
   if (existingLoginBtn) {
     existingLoginBtn.remove();
   }
+  
+  // Hide login modal if it's showing
+  if (typeof hideLoginModal !== 'undefined') {
+    hideLoginModal();
+  }
 }
 
 function showLoginOption() {
+  // Set global login state
+  if (typeof isUserLoggedIn !== 'undefined') {
+    isUserLoggedIn = false;
+  }
+  
   // Update top navigation for non-authenticated user
   updateTopNavForGuest();
   
