@@ -76,14 +76,6 @@ let threads = JSON.parse(localStorage.getItem("threads")) || [
 let currentThreadId = threads[0].id;
 let conversation = threads[0].conversation;
 
-// Global variables
-let currentModel = "gpt-3.5-turbo";
-let isThinking = false;
-let messageCounter = 0;
-let conversationHistory = [];
-let isUserLoggedIn = false;
-let pendingMessage = null;
-
 function switchThread(threadId) {
   currentThreadId = threadId;
   const thread = threads.find((t) => t.id === threadId);
@@ -169,7 +161,7 @@ function formatMarkdown(text) {
 
   // Parse markdown
   let html = marked.parse(text);
-
+  
   // Sanitize the HTML to prevent XSS attacks while preserving code highlighting
   html = DOMPurify.sanitize(html, {
     ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'strike', 'del', 'ins', 
@@ -199,15 +191,15 @@ function addMessage(content, type = "gpt", model = null) {
   // Handle different message types
   if (type === "gpt") {
     msg.innerHTML = formatMarkdown(content);
-
+    
     // Initialize syntax highlighting for code blocks
     msg.querySelectorAll('pre code').forEach((block) => {
       hljs.highlightElement(block);
     });
-
+    
     // Add copy button to GPT messages
     addCopyButton(msg);
-
+    
     // Add copy buttons to code blocks
     addCodeBlockCopyButtons(msg);
   } else if (type === "system") {
@@ -470,7 +462,7 @@ function addCodeBlockCopyButtons(messageElement) {
       opacity: 0;
       z-index: 10;
     `;
-
+    
     copyBtn.onclick = async (e) => {
       e.stopPropagation();
       try {
@@ -490,7 +482,7 @@ function addCodeBlockCopyButtons(messageElement) {
         console.error('Failed to copy code: ', err);
       }
     };
-
+    
     // Show/hide copy button on hover
     pre.style.position = "relative";
     pre.addEventListener('mouseenter', () => {
@@ -499,7 +491,7 @@ function addCodeBlockCopyButtons(messageElement) {
     pre.addEventListener('mouseleave', () => {
       copyBtn.style.opacity = "0";
     });
-
+    
     pre.appendChild(copyBtn);
   });
 }
@@ -519,7 +511,7 @@ function smoothScrollToBottom() {
 function openCustomerService() {
   const helpMessage = "Here are some frequently asked questions:\n\n• How do I use Prismity AI?\n• What AI models are available?\n• How do I start a new conversation?\n• Can I export my chat history?\n• How do I change themes?\n\nFor more help, you can ask me anything or contact our support team!";
   addMessage(helpMessage, "system");
-
+  
   // Scroll to show the message
   const box = document.getElementById("output-box");
   if (box) {
@@ -579,7 +571,7 @@ function newChat() {
   const promptInput = document.getElementById("prompt-input");
   if (promptInput) promptInput.value = "";
 
-
+  
 
   updateUI();
 }
@@ -717,120 +709,6 @@ function toggleTheme() {
   const currentTheme = localStorage.getItem("theme") || "light";
   const newTheme = currentTheme === "light" ? "dark" : "light";
   setTheme(newTheme);
-}
-
-// Login Modal Functions
-function showLoginModal() {
-  // Create modal if it doesn't exist
-  if (!document.getElementById('login-modal-overlay')) {
-    createLoginModal();
-  }
-
-  const modal = document.getElementById('login-modal-overlay');
-  const mainContent = document.querySelector('.container');
-
-  // Show modal with animation
-  modal.classList.add('active');
-
-  // Disable background interaction
-  if (mainContent) {
-    mainContent.classList.add('modal-backdrop-disabled');
-  }
-
-  // Prevent body scroll
-  document.body.style.overflow = 'hidden';
-}
-
-function hideLoginModal() {
-  const modal = document.getElementById('login-modal-overlay');
-  const mainContent = document.querySelector('.container');
-
-  if (modal) {
-    modal.classList.remove('active');
-  }
-
-  // Re-enable background interaction
-  if (mainContent) {
-    mainContent.classList.remove('modal-backdrop-disabled');
-  }
-
-  // Restore body scroll
-  document.body.style.overflow = '';
-
-  // Send pending message if exists
-  if (pendingMessage) {
-    const messageInput = document.getElementById('prompt-input');
-    if (messageInput) {
-      messageInput.value = pendingMessage;
-      pendingMessage = null;
-      submitPrompt(pendingMessage); // Send the message now that user is logged in
-    }
-  }
-}
-
-function createLoginModal() {
-  const modalHTML = `
-    <div id="login-modal-overlay" class="login-modal-overlay">
-      <div class="login-modal">
-        <div class="login-modal-icon">🔒</div>
-        <h2>Sign in to use Prismity AI</h2>
-        <p>Please sign in with your Google account to start chatting with Prismity AI.</p>
-        <a href="/set-auth-intent/login" class="google-login-btn">
-          <svg viewBox="0 0 24 24">
-            <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-            <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-            <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-            <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-          </svg>
-          Sign in with Google
-        </a>
-      </div>
-    </div>
-  `;
-
-  document.body.insertAdjacentHTML('beforeend', modalHTML);
-}
-
-// Check authentication status
-async function checkAuthStatus() {
-  try {
-    const response = await fetch('/api/auth/status');
-    const data = await response.json();
-
-    if (data.authenticated && data.user) {
-      console.log('User authenticated:', data.user);
-      isUserLoggedIn = true;
-      updateUIForLoggedInUser(data.user);
-      hideLoginModal(); // Hide modal if user logs in
-    } else {
-      console.log('User not logged in');
-      isUserLoggedIn = false;
-      updateUIForLoggedOutUser();
-    }
-  } catch (error) {
-    console.error('Error checking auth status:', error);
-    isUserLoggedIn = false;
-    updateUIForLoggedOutUser();
-  }
-}
-
-// Initialize application
-async function initializeApp() {
-  console.log('Initializing Prismity AI...');
-
-  try {
-    await loadModelConfig();
-    await checkAuthStatus();
-    setupEventListeners();
-    setupEnterKeyListener();
-
-    console.log('✅ Application initialized successfully');
-
-    // Periodically check auth status to handle login in other tabs
-    setInterval(checkAuthStatus, 30000); // Check every 30 seconds
-  } catch (error) {
-    console.error('❌ Error initializing application:', error);
-  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -990,32 +868,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("clear-chat")?.addEventListener("click", newChat);
 });
-
-// Use template function
-function useTemplate(template) {
-  const messageInput = document.getElementById('prompt-input');
-  if (messageInput) {
-    messageInput.value = template.prompt;
-    messageInput.focus();
-    // Auto-send the template message
-    submitPrompt(template.prompt);
-  }
-}
-
-// Handle send message
-function handleSendMessage() {
-  const messageInput = document.getElementById('prompt-input');
-  const message = messageInput.value.trim();
-
-  if (!message) return;
-
-  // Check if user is logged in
-  if (!isUserLoggedIn) {
-    pendingMessage = message; // Store the message to send after login
-    messageInput.value = ''; // Clear the input
-    showLoginModal();
-    return;
-  }
-
-  submitPrompt(message);
-}
