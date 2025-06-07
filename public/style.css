@@ -2282,6 +2282,103 @@ a:focus-visible {
   max-width: 400px;
 }
 
+/* Login Modal Styles */
+.login-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.login-modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.login-modal {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  padding: 40px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  transform: scale(0.9) translateY(20px);
+  transition: all 0.3s ease;
+  pointer-events: auto;
+}
+
+.login-modal-overlay.active .login-modal {
+  transform: scale(1) translateY(0);
+}
+
+.login-modal-icon {
+  font-size: 3rem;
+  color: var(--accent-primary);
+  margin-bottom: 20px;
+}
+
+.login-modal h2 {
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.login-modal p {
+  color: var(--text-muted);
+  margin-bottom: 30px;
+  line-height: 1.5;
+}
+
+.google-login-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  width: 100%;
+  justify-content: center;
+}
+
+.google-login-btn:hover {
+  background: #3367d6;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+}
+
+.google-login-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.modal-backdrop-disabled {
+  pointer-events: none;
+  filter: brightness(0.3);
+  transition: all 0.3s ease;
+}
+
 /* Responsive Design for Templates */
 @media (max-width: 768px) {
   .templates-grid {    grid-template-columns: 1fr;
@@ -2331,6 +2428,21 @@ a:focus-visible {
 
   .card-description {
     font-size: 0.9rem;
+  }
+
+  .login-modal {
+    padding: 30px 20px;
+    margin: 20px;
+  }
+
+  .login-modal h2 {
+    font-size: 1.3rem;
+  }
+
+  .login-modal p {
+    font-size: 0.9rem;
+  }
+}e: 0.9rem;
   }
 }
 
