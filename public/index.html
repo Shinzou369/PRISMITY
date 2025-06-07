@@ -1,215 +1,241 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PRISMiTY.AI</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- Enhanced Google Fonts for modern typography -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Added subtle animations library -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <!-- Markdown and Syntax Highlighting -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+    <!-- Highlight.js Theme - GitHub Dark -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css"
+    />
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PRISMiTY.AI</title>
-  <link rel="stylesheet" href="style.css" />
-  <!-- Enhanced Google Fonts for modern typography -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <!-- Added subtle animations library -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-  <!-- Markdown and Syntax Highlighting -->
-  <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
-  <!-- Highlight.js Theme - GitHub Dark -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
-</head>
-
-<body>
-  <!-- Enhanced top navigation bar - REMOVED websites dropdown -->
-  <nav class="top-nav animate__animated animate__fadeInDown">
-    <div class="nav-left">
-      <button class="toggle-btn" onclick="toggleSidebar()">
-        <span class="hamburger-line">
-        </span>
-        <span class="hamburger-line">
-        </span>
-        <span class="hamburger-line">
-        </span>
-      </button>
-      <div class="logo-container">
-        <img src="Logo_of_an_AI_called_Prismity.png" alt="Prismity AI" class="logo-icon" />
-        <span class="logo-text">PRISMiTY AI</span>
-      </div>
-    </div>
-    <div class="nav-right">
-      <!-- Auth container will be dynamically populated by auth.js -->
-      <a href="admin.html" class="admin-link" title="Model Configuration">
-        <i data-lucide="settings"></i>
-      </a>
-      <button class="theme-btn" onclick="toggleTheme()">
-        <i data-lucide="moon"></i>
-      </button>
-    </div>
-  </nav>
-  <div class="container">
-    <!-- ✨ ENHANCED IMMERSIVE HERO SECTION ✨ -->
-    <header class="hero-section animate__animated animate__fadeInUp" id="hero-section">
-      <!-- Main hero content that transitions out on hover -->
-      <div class="hero-content" id="hero-main-content">
-        <h1 class="hero-title">PRISMiTY.AI</h1>
-        <p class="hero-subtitle">Your
-          <strong>AI-powered productivity assistant</strong>for marketing and automation tasks. Get things done faster with intelligent automation.</p>
-        <div class="hero-stats">
-          <div class="stat-item">
-            <span class="stat-number">3+</span>
-            <span class="stat-label">AI Models</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-number">∞</span>
-            <span class="stat-label">Possibilities</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-number">24/7</span>
-            <span class="stat-label">Available</span>
-          </div>
+  <body>
+    <!-- Enhanced top navigation bar - REMOVED websites dropdown -->
+    <nav class="top-nav animate__animated animate__fadeInDown">
+      <div class="nav-left">
+        <button class="toggle-btn" onclick="toggleSidebar()">
+          <span class="hamburger-line"> </span>
+          <span class="hamburger-line"> </span>
+          <span class="hamburger-line"> </span>
+        </button>
+        <div class="logo-container">
+          <img
+            src="Logo_of_an_AI_called_Prismity.png"
+            alt="Prismity AI"
+            class="logo-icon"
+          />
+          <span class="logo-text">PRISMiTY AI</span>
         </div>
       </div>
-      <!-- ✨ IMMERSIVE SPIRITUAL WORLD - APPEARS ON HOVER ✨ -->
-      <div class="spiritual-world" id="spiritual-world">
-        <!-- Floating animated shapes -->
-        <div class="floating-shapes">
-          <div class="shape shape-circle">
-          </div>
-          <div class="shape shape-star">
-          </div>
-          <div class="shape shape-bubble">
-          </div>
-          <div class="shape shape-light">
-          </div>
-          <div class="shape shape-glow">
-          </div>
-        </div>
-        <!-- Spiritual verse container -->
-        <div class="spiritual-content">
-          <div class="spiritual-icon">🕊️</div>
-          <blockquote class="spiritual-verse" id="spiritual-verse">"For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, to give you hope and a future."</blockquote>
-          <cite class="spiritual-reference" id="spiritual-reference">Jeremiah 29:11 (NIV)</cite>
-          <div class="spiritual-divider">
-          </div>
-        </div>
-        <!-- Background overlay -->
-        <div class="spiritual-overlay">
-        </div>
+      <div class="nav-right">
+        <!-- Auth container will be dynamically populated by auth.js -->
+        <a href="admin.html" class="admin-link" title="Model Configuration">
+          <i data-lucide="settings"></i>
+        </a>
+        <button class="theme-btn" onclick="toggleTheme()">
+          <i data-lucide="moon"></i>
+        </button>
       </div>
-    </header>
-    <div class="main">
-      <!-- Enhanced sidebar with websites section MOVED HERE -->
-      <aside class="sidebar animate__animated animate__slideInLeft" id="sidebar">
-        <div class="sidebar-header">
-          <h2>
-            <i data-lucide="message-square"></i>Conversations</h2>
-          <button class="new-thread-btn" onclick="newChat()">
-            <span class="btn-icon">
-              <i data-lucide="plus"></i>
-            </span>
-            <span class="btn-text">New Chat</span>
-          </button>
-        </div>
-        <div class="threads-container">
-          <ul id="threads-list">
-          </ul>
-        </div>
-        <!-- AI Templates Hub -->
-        <div class="websites-section">
-          <h3 class="websites-title">
-            <i data-lucide="globe"></i>Prismity Task Force</h3>
-          <div class="websites-grid">
-            <div class="website-card taskforce-main-link" onclick="window.location.href='templates.html'">
-              <div class="website-icon">
-                <i data-lucide="target"></i>
-              </div>
-              <div class="website-info">
-                <div class="website-name">AI Templates Hub</div>
-                <div class="website-desc">Ready-to-use AI prompts</div>
-              </div>
+    </nav>
+    <div class="container">
+      <!-- ✨ ENHANCED IMMERSIVE HERO SECTION ✨ -->
+      <header
+        class="hero-section animate__animated animate__fadeInUp"
+        id="hero-section"
+      >
+        <!-- Main hero content that transitions out on hover -->
+        <div class="hero-content" id="hero-main-content">
+          <h1 class="hero-title">PRISMiTY.AI</h1>
+          <p class="hero-subtitle">
+            Your <strong>AI-powered productivity assistant</strong>for marketing
+            and automation tasks. Get things done faster with intelligent
+            automation.
+          </p>
+          <div class="hero-stats">
+            <div class="stat-item">
+              <span class="stat-number">3+</span>
+              <span class="stat-label">AI Models</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">∞</span>
+              <span class="stat-label">Possibilities</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">24/7</span>
+              <span class="stat-label">Available</span>
             </div>
           </div>
         </div>
-        <!-- AI status indicator at bottom -->
-        <div class="ai-status">
-          <div class="status-indicator online">
-            <i data-lucide="check-circle"></i>
+        <!-- ✨ IMMERSIVE SPIRITUAL WORLD - APPEARS ON HOVER ✨ -->
+        <div class="spiritual-world" id="spiritual-world">
+          <!-- Floating animated shapes -->
+          <div class="floating-shapes">
+            <div class="shape shape-circle"></div>
+            <div class="shape shape-star"></div>
+            <div class="shape shape-bubble"></div>
+            <div class="shape shape-light"></div>
+            <div class="shape shape-glow"></div>
           </div>
-          <span class="status-text">AI Online</span>
+          <!-- Spiritual verse container -->
+          <div class="spiritual-content">
+            <div class="spiritual-icon">🕊️</div>
+            <blockquote class="spiritual-verse" id="spiritual-verse">
+              "For I know the plans I have for you, declares the Lord, plans to
+              prosper you and not to harm you, to give you hope and a future."
+            </blockquote>
+            <cite class="spiritual-reference" id="spiritual-reference"
+              >Jeremiah 29:11 (NIV)</cite
+            >
+            <div class="spiritual-divider"></div>
+          </div>
+          <!-- Background overlay -->
+          <div class="spiritual-overlay"></div>
         </div>
-      </aside>
-      <!-- Enhanced workspace with better layout -->
-      <section class="workspace animate__animated animate__fadeIn">
-        <!-- Enhanced quick chat with FIXED typography -->
-        <div class="quick-chat">
-          <h3 class="quick-chat-title">Quick Start</h3>
-          <div class="quick-buttons">
-            <!-- FIXED: Removed **markdown** and used proper HTML -->
-            <button class="quick-btn gradient-btn">
+      </header>
+      <div class="main">
+        <!-- Enhanced sidebar with websites section MOVED HERE -->
+        <aside
+          class="sidebar animate__animated animate__slideInLeft"
+          id="sidebar"
+        >
+          <div class="sidebar-header">
+            <h2><i data-lucide="message-square"></i>Conversations</h2>
+            <button class="new-thread-btn" onclick="newChat()">
               <span class="btn-icon">
-                <i data-lucide="trending-up"></i>
+                <i data-lucide="plus"></i>
               </span>
-              <span class="btn-text">Need help with
-                <strong>Affiliate Marketing</strong>?</span>
-            </button>
-            <button class="quick-btn gradient-btn">
-              <span class="btn-icon">
-                <i data-lucide="help-circle"></i>
-              </span>
-              <span class="btn-text">What does
-                <strong>Prismity.AI</strong>offer?</span>
-            </button>
-            <button class="quick-btn gradient-btn">
-              <span class="btn-icon">
-                <i data-lucide="rocket"></i>
-              </span>
-              <span class="btn-text">How to
-                <strong>get started</strong>with Prismity.AI?</span>
+              <span class="btn-text">New Chat</span>
             </button>
           </div>
-        </div>
-        <!-- Enhanced chat output with modern styling -->
-        <div class="chat-container">
-          <div class="output-box" id="output-box">
-            <!-- Chat conversation will appear here -->
+          <div class="threads-container">
+            <ul id="threads-list"></ul>
           </div>
-        </div>
-        <!-- Enhanced prompt input area -->
-        <div class="prompt-container">
-          <div class="prompt-box">
-            <div class="input-wrapper">
-              <textarea id="prompt-input" placeholder="Ask Prism anything...">
-              </textarea>
-              <div class="input-actions">
-                <button class="attachment-btn" title="Attach file">
-                  <i data-lucide="paperclip"></i>
-                </button>
-                <button id="submit-btn" class="submit-btn">
-                  <span class="submit-icon">
-                    <i data-lucide="send"></i>
-                  </span>
-                </button>
+          <!-- AI Templates Hub -->
+          <div class="websites-section">
+            <h3 class="websites-title">
+              <i data-lucide="globe"></i>Prismity Task Force
+            </h3>
+            <div class="websites-grid">
+              <div
+                class="website-card taskforce-main-link"
+                onclick="window.location.href='templates.html'"
+              >
+                <div class="website-icon">
+                  <i data-lucide="target"></i>
+                </div>
+                <div class="website-info">
+                  <div class="website-name">AI Templates Hub</div>
+                  <div class="website-desc">Ready-to-use AI prompts</div>
+                </div>
               </div>
             </div>
-            <div class="char-counter" id="char-counter">0/1000</div>
           </div>
-        </div>
-      </section>
+          <!-- AI status indicator at bottom -->
+          <div class="ai-status">
+            <div class="status-indicator online">
+              <i data-lucide="check-circle"></i>
+            </div>
+            <span class="status-text">AI Online</span>
+          </div>
+        </aside>
+        <!-- Enhanced workspace with better layout -->
+        <section class="workspace animate__animated animate__fadeIn">
+          <!-- Enhanced quick chat with FIXED typography -->
+          <div class="quick-chat">
+            <h3 class="quick-chat-title">Quick Start</h3>
+            <div class="quick-buttons">
+              <!-- FIXED: Removed **markdown** and used proper HTML -->
+              <button class="quick-btn gradient-btn">
+                <span class="btn-icon">
+                  <i data-lucide="trending-up"></i>
+                </span>
+                <span class="btn-text"
+                  >Need help with <strong>Affiliate Marketing</strong>?</span
+                >
+              </button>
+              <button class="quick-btn gradient-btn">
+                <span class="btn-icon">
+                  <i data-lucide="help-circle"></i>
+                </span>
+                <span class="btn-text"
+                  >What does <strong>Prismity.AI</strong>offer?</span
+                >
+              </button>
+              <button class="quick-btn gradient-btn">
+                <span class="btn-icon">
+                  <i data-lucide="rocket"></i>
+                </span>
+                <span class="btn-text"
+                  >How to <strong>get started</strong>with Prismity.AI?</span
+                >
+              </button>
+            </div>
+          </div>
+          <!-- Enhanced chat output with modern styling -->
+          <div class="chat-container">
+            <div class="output-box" id="output-box">
+              <!-- Chat conversation will appear here -->
+            </div>
+          </div>
+          <!-- Enhanced prompt input area -->
+          <div class="prompt-container">
+            <div class="prompt-box">
+              <div class="input-wrapper">
+                <textarea
+                  id="prompt-input"
+                  placeholder="Ask Prismity anything..."
+                ></textarea>
+                <div class="input-actions">
+                  <button class="attachment-btn" title="Attach file">
+                    <i data-lucide="paperclip"></i>
+                  </button>
+                  <button id="submit-btn" class="submit-btn">
+                    <span class="submit-icon">
+                      <i data-lucide="send"></i>
+                    </span>
+                  </button>
+                </div>
+              </div>
+              <div class="char-counter" id="char-counter">0/1000</div>
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
-  </div>
-  <!-- Customer Service/FAQ floating action button -->
-  <button class="fab" onclick="openCustomerService()" title="Customer Service & FAQs">
-    <span>
-      <i data-lucide="message-circle"></i>
-    </span>
-  </button>
-  <script src="auth.js"></script>
-  <script src="script.js"></script>
-  <script>
-  // Initialize Lucide icons
-        lucide.createIcons();
-  </script>
-</body>
-
+    <!-- Customer Service/FAQ floating action button -->
+    <button
+      class="fab"
+      onclick="openCustomerService()"
+      title="Customer Service & FAQs"
+    >
+      <span>
+        <i data-lucide="message-circle"></i>
+      </span>
+    </button>
+    <script src="auth.js"></script>
+    <script src="script.js"></script>
+    <script>
+      // Initialize Lucide icons
+      lucide.createIcons();
+    </script>
+  </body>
 </html>
