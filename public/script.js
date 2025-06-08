@@ -252,32 +252,252 @@ function selectModel(prompt) {
   return "gpt-3.5-turbo"; // default
 }
 
-// === GPT API CALL ===
-async function getGPTResponse(model) {
-  try {
-    const response = await fetch('/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: model,
-        messages: conversation,
-        thread_id: currentThreadId
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to get response');
-    }
-
-    const data = await response.json();
-    return data.message.content.trim();
-  } catch (error) {
-    console.error('Error during API call:', error);
-    return 'Sorry, there was an error communicating with the AI.';
+// === ENHANCED ERROR HANDLING ===
+function showErrorMessage(message, type = 'error') {
+  const errorDiv = document.createElement('div');
+  errorDiv.className = `error-notification ${type}`;
+  errorDiv.innerHTML = `
+    <div class="error-content">
+      <i data-lucide="${type === 'error' ? 'alert-circle' : 'info'}"></i>
+      <span>${message}</span>
+      <button class="error-close" onclick="this.parentElement.parentElement.remove()">×</button>
+    </div>
+  `;
+  
+  // Add styles if not already present
+  if (!document.querySelector('#error-styles')) {
+    const errorStyles = document.createElement('style');
+    errorStyles.id = 'error-styles';
+    errorStyles.textContent = `
+      .error-notification {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        z-index: 10000;
+        max-width: 400px;
+        animation: slideInRight 0.3s ease-out;
+      }
+      
+      .error-notification.error {
+        border-color: #ef4444;
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), var(--bg-secondary));
+      }
+      
+      .error-notification.warning {
+        border-color: #f59e0b;
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), var(--bg-secondary));
+      }
+      
+      .error-notification.info {
+        border-color: #3b82f6;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), var(--bg-secondary));
+      }
+      
+      .error-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        color: var(--text-primary);
+      }
+      
+      .error-content i {
+        flex-shrink: 0;
+        width: 20px;
+        height: 20px;
+      }
+      
+      .error-content span {
+        flex: 1;
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
+      
+      .error-close {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        font-size: 20px;
+        cursor: pointer;
+        padding: 0;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: var(--transition);
+      }
+      
+      .error-close:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-primary);
+      }
+      
+      @keyframes slideInRight {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      
+      @media (max-width: 480px) {
+        .error-notification {
+          right: 10px;
+          left: 10px;
+          max-width: none;
+        }
+      }
+    `;
+    document.head.appendChild(errorStyles);
   }
+  
+  document.body.appendChild(errorDiv);
+  
+  // Auto-remove after 5 seconds
+  setTimeout(() => {
+    if (errorDiv.parentElement) {
+      errorDiv.style.animation = 'slideInRight 0.3s ease-out reverse';
+      setTimeout(() => errorDiv.remove(), 300);
+    }
+  }, 5000);
+  
+  // Initialize lucide icons for the error message
+  lucide.createIcons();
+}
+
+function checkNetworkConnection() {
+  return navigator.onLine;
+}
+
+function getErrorMessage(error, response) {
+  if (!checkNetworkConnection()) {
+    return "No internet connection. Please check your network and try again.";
+  }
+  
+  if (response) {
+    switch (response.status) {
+      case 429:
+        return "Too many requests. Please wait a moment before trying again.";
+      case 401:
+        return "Authentication failed. Please log in again.";
+      case 403:
+        return "Access denied. Please check your permissions.";
+      case 500:
+        return "Server error. Our team has been notified. Please try again in a few minutes.";
+      case 503:
+        return "Service temporarily unavailable. Please try again later.";
+      default:
+        if (response.status >= 400 && response.status < 500) {
+          return "Client error. Please check your request and try again.";
+        }
+        return "Network error. Please check your connection and try again.";
+    }
+  }
+  
+  if (error.name === 'TypeError' && error.message.includes('fetch')) {
+    return "Unable to connect to the server. Please check your internet connection.";
+  }
+  
+  if (error.message.includes('timeout')) {
+    return "Request timed out. The AI might be busy. Please try again.";
+  }
+  
+  return "An unexpected error occurred. Please try again or contact support if the problem persists.";
+}
+
+// === ENHANCED GPT API CALL WITH COMPREHENSIVE ERROR HANDLING ===
+async function getGPTResponse(model) {
+  const maxRetries = 2;
+  let retryCount = 0;
+  
+  while (retryCount <= maxRetries) {
+    try {
+      // Add timeout to fetch request
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
+      const response = await fetch('/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: conversation,
+          thread_id: currentThreadId
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch (parseError) {
+          errorData = { error: 'Invalid response from server' };
+        }
+        
+        const errorMessage = getErrorMessage(new Error(errorData.error), response);
+        
+        // Show specific error to user
+        if (response.status === 429 && retryCount < maxRetries) {
+          showErrorMessage(`Rate limit exceeded. Retrying in ${(retryCount + 1) * 2} seconds...`, 'warning');
+          await new Promise(resolve => setTimeout(resolve, (retryCount + 1) * 2000));
+          retryCount++;
+          continue;
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      
+      if (!data.message || !data.message.content) {
+        throw new Error("Invalid response format from AI service");
+      }
+      
+      return data.message.content.trim();
+      
+    } catch (error) {
+      console.error(`API call attempt ${retryCount + 1} failed:`, error);
+      
+      if (error.name === 'AbortError') {
+        const timeoutError = "Request timed out. The AI service might be busy. Please try again.";
+        if (retryCount < maxRetries) {
+          showErrorMessage(`${timeoutError} Retrying...`, 'warning');
+          retryCount++;
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          continue;
+        } else {
+          showErrorMessage(timeoutError, 'error');
+          return "Sorry, the request timed out. Please try again with a shorter message or try again later.";
+        }
+      }
+      
+      if (retryCount < maxRetries && !error.message.includes('Authentication')) {
+        showErrorMessage(`Error occurred. Retrying... (${retryCount + 1}/${maxRetries})`, 'warning');
+        retryCount++;
+        await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+      } else {
+        const userFriendlyError = getErrorMessage(error);
+        showErrorMessage(userFriendlyError, 'error');
+        return `Sorry, there was an error: ${userFriendlyError}`;
+      }
+    }
+  }
+  
+  return "Sorry, I'm unable to process your request right now. Please try again later or contact support if the problem persists.";
 }
 
 // === MAIN CHAT SUBMISSION FLOW ===
@@ -337,6 +557,13 @@ async function submitPrompt(promptText) {
   try {
     const response = await getGPTResponse(selectedModel);
 
+    // Check if response indicates an error
+    if (response.startsWith("Sorry, there was an error:") || response.startsWith("Sorry, I'm unable to process")) {
+      hideTypingIndicator();
+      addMessage(response, "gpt");
+      return;
+    }
+
     const outputBox = document.getElementById("output-box");
     if (outputBox) {
       const gptMsgs = outputBox.querySelectorAll(".gpt");
@@ -374,49 +601,81 @@ async function submitPrompt(promptText) {
         modelIndicator.classList.add(modelClass);
 
         messageContent.innerHTML = `
-          <div class="gpt-content">${cleanResponse}</div>
+          <div class="gpt-content">${formatMarkdown(cleanResponse)}</div>
           <div class="model-tag">${selectedModel}</div>
         `;
 
         messageContent.appendChild(modelIndicator);
         messageContainer.appendChild(messageContent);
         lastGpt.replaceWith(messageContainer);
+        
+        // Initialize syntax highlighting and copy buttons
+        messageContainer.querySelectorAll('pre code').forEach((block) => {
+          hljs.highlightElement(block);
+        });
+        addCodeBlockCopyButtons(messageContainer);
       }
     }
 
     conversation.push({ role: "assistant", content: response });
 
-    // Add model indicator message
-    const modelMessage = `Powered by ${selectedModel}`;
-    const msg = document.createElement("div");
-    msg.classList.add("message", "gpt", "model-message");
-    msg.innerText = modelMessage;
-    outputBox.appendChild(msg);
-    conversation.push({ role: "assistant", content: modelMessage });
-
-    // Generate creative thread title using the AI's response
+    // Generate creative thread title using the AI's response (with error handling)
     const currentThread = threads.find((t) => t.id === currentThreadId);
     if (currentThread && currentThread.title === "New Chat") {
-      const titlePrompt = `Based on this conversation: "${promptText}", generate a creative and concise title (max 4 words).`;
-      conversation.push({ role: "user", content: titlePrompt });
-      const titleResponse = await getGPTResponse("gpt-3.5-turbo");
-      conversation.pop(); // Remove the title prompt from conversation
-      currentThread.title = titleResponse.replace(/["']/g, "").slice(0, 40);
+      try {
+        const titlePrompt = `Based on this conversation: "${promptText}", generate a creative and concise title (max 4 words).`;
+        conversation.push({ role: "user", content: titlePrompt });
+        const titleResponse = await getGPTResponse("gpt-3.5-turbo");
+        conversation.pop(); // Remove the title prompt from conversation
+        
+        if (titleResponse && !titleResponse.startsWith("Sorry")) {
+          currentThread.title = titleResponse.replace(/["']/g, "").slice(0, 40);
+        } else {
+          // Fallback title based on user input
+          currentThread.title = promptText.slice(0, 30) + (promptText.length > 30 ? "..." : "");
+        }
+      } catch (titleError) {
+        console.warn("Failed to generate thread title:", titleError);
+        currentThread.title = promptText.slice(0, 30) + (promptText.length > 30 ? "..." : "");
+      }
     }
 
-    // Save threads to localStorage
-    localStorage.setItem("threads", JSON.stringify(threads));
-    updateUI();
+    // Save threads to localStorage with error handling
+    try {
+      localStorage.setItem("threads", JSON.stringify(threads));
+      updateUI();
+    } catch (storageError) {
+      console.warn("Failed to save to localStorage:", storageError);
+      showErrorMessage("Unable to save conversation locally. Your chat will not be persistent.", "warning");
+    }
+    
   } catch (err) {
-    console.error(err);
+    console.error("Submit error:", err);
     hideTypingIndicator();
-    addMessage("Sorry, there was an error. Please try again.", "gpt");
+    
+    // More specific error handling
+    let errorMessage = "Sorry, there was an unexpected error. Please try again.";
+    
+    if (err.message.includes("Failed to fetch")) {
+      errorMessage = "Unable to connect to the AI service. Please check your internet connection and try again.";
+    } else if (err.message.includes("timeout")) {
+      errorMessage = "The request timed out. Please try again with a shorter message.";
+    } else if (err.message.includes("rate limit")) {
+      errorMessage = "Too many requests. Please wait a moment before trying again.";
+    }
+    
+    addMessage(errorMessage, "gpt");
+    showErrorMessage("Failed to get AI response. " + errorMessage, "error");
+    
   } finally {
     // Enhanced button state restoration
     const submitBtn = document.getElementById("submit-btn");
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = '<span class="submit-icon">🚀</span>';
-    submitBtn.style.transform = "scale(1)";
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span class="submit-icon"><i data-lucide="send"></i></span>';
+      submitBtn.style.transform = "scale(1)";
+      lucide.createIcons(); // Re-initialize icons
+    }
 
     hideTypingIndicator();
   }
@@ -762,6 +1021,44 @@ function initializeSpiritualWorld() {
 }
 // ✨ IMMERSIVE SPIRITUAL WORLD FEATURE END ✨
 
+// === CONNECTION STATUS MONITORING ===
+function updateConnectionStatus() {
+  const statusIndicator = document.querySelector('.status-indicator');
+  const statusText = document.querySelector('.status-text');
+  
+  if (statusIndicator && statusText) {
+    if (navigator.onLine) {
+      statusIndicator.innerHTML = '<i data-lucide="check-circle"></i>';
+      statusIndicator.className = 'status-indicator online';
+      statusText.textContent = 'AI Online';
+      statusIndicator.style.color = '#10b981';
+    } else {
+      statusIndicator.innerHTML = '<i data-lucide="wifi-off"></i>';
+      statusIndicator.className = 'status-indicator offline';
+      statusText.textContent = 'Offline';
+      statusIndicator.style.color = '#ef4444';
+    }
+    lucide.createIcons();
+  }
+}
+
+// Add loading state improvements
+function setButtonLoading(button, isLoading, originalText = '') {
+  if (!button) return;
+  
+  if (isLoading) {
+    button.disabled = true;
+    button.dataset.originalText = button.innerHTML;
+    button.innerHTML = '<div class="loading-spinner"></div>';
+    button.style.transform = 'scale(0.98)';
+  } else {
+    button.disabled = false;
+    button.innerHTML = button.dataset.originalText || originalText;
+    button.style.transform = 'scale(1)';
+    lucide.createIcons();
+  }
+}
+
 // === PAGE INIT ===
 // Theme handling
 function setTheme(theme) {
@@ -786,6 +1083,17 @@ document.addEventListener("DOMContentLoaded", () => {
   // Set initial theme
   const savedTheme = localStorage.getItem("theme") || "dark";
   setTheme(savedTheme);
+
+  // Initialize connection monitoring
+  updateConnectionStatus();
+  window.addEventListener('online', () => {
+    updateConnectionStatus();
+    showErrorMessage('Connection restored! You can continue chatting.', 'info');
+  });
+  window.addEventListener('offline', () => {
+    updateConnectionStatus();
+    showErrorMessage('You are offline. Please check your internet connection.', 'warning');
+  });
 
   // NEW: Initialize website cards functionality
   initializeWebsiteCards();
@@ -819,7 +1127,7 @@ document.addEventListener("DOMContentLoaded", () => {
       promptInput.style.height = Math.min(promptInput.scrollHeight, 120) + "px";
     });
 
-    // Add Enter key handling with Shift+Enter for new lines
+    // Enhanced keyboard handling
     promptInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
@@ -828,7 +1136,37 @@ document.addEventListener("DOMContentLoaded", () => {
           submitPrompt(prompt);
         }
       }
+      
+      // Escape to clear input
+      if (e.key === "Escape") {
+        promptInput.value = "";
+        promptInput.blur();
+      }
     });
+
+  // Global keyboard shortcuts
+  document.addEventListener("keydown", (e) => {
+    // Ctrl/Cmd + K to focus search
+    if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+      e.preventDefault();
+      const promptInput = document.getElementById("prompt-input");
+      if (promptInput) {
+        promptInput.focus();
+      }
+    }
+    
+    // Ctrl/Cmd + N for new chat
+    if ((e.ctrlKey || e.metaKey) && e.key === "n") {
+      e.preventDefault();
+      newChat();
+    }
+    
+    // Ctrl/Cmd + B to toggle sidebar
+    if ((e.ctrlKey || e.metaKey) && e.key === "b") {
+      e.preventDefault();
+      toggleSidebar();
+    }
+  });
   }
 
   // Update UI to show threads
