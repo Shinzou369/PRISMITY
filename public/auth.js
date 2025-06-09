@@ -29,6 +29,10 @@ function initiateGoogleLogin() {
 }
 
 function logout() {
+  // Clear user data before redirecting
+  if (typeof clearUserData !== 'undefined') {
+    clearUserData();
+  }
   window.location.href = '/logout';
 }
 
@@ -48,10 +52,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
-function updateUIForLoggedInUser(user) {
+async function updateUIForLoggedInUser(user) {
   // Set global login state
   if (typeof isUserLoggedIn !== 'undefined') {
     isUserLoggedIn = true;
+  }
+  
+  // Load user's threads from server
+  if (typeof loadUserThreads !== 'undefined') {
+    await loadUserThreads();
   }
   
   // Update top navigation with user info
@@ -70,6 +79,11 @@ function updateUIForLoggedInUser(user) {
   if (typeof hideLoginModal !== 'undefined') {
     hideLoginModal();
   }
+  
+  // Update UI with user's data
+  if (typeof updateUI !== 'undefined') {
+    updateUI();
+  }
 }
 
 function showLoginOption() {
@@ -78,11 +92,21 @@ function showLoginOption() {
     isUserLoggedIn = false;
   }
   
+  // Clear user data
+  if (typeof clearUserData !== 'undefined') {
+    clearUserData();
+  }
+  
   // Update top navigation for non-authenticated user
   updateTopNavForGuest();
   
   // Show generic hero title
   showGenericHeroTitle();
+  
+  // Update UI to show empty state
+  if (typeof updateUI !== 'undefined') {
+    updateUI();
+  }
 }
 
 function updateTopNavForUser(user) {

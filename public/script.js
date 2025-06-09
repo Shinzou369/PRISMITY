@@ -61,23 +61,95 @@ function initializeWebsiteCards() {
 }
 
 // === MEMORY + TRAINING SETUP ===
-let customTraining =
-  localStorage.getItem("customTraining") ||
-  "You are TaskAI, a helpful assistant for marketing and productivity tasks.";
-
-let threads = JSON.parse(localStorage.getItem("threads")) || [
-  {
-    id: Date.now(),
-    title: "New Chat",
-    conversation: [{ role: "system", content: customTraining }],
-  },
-];
-
-let currentThreadId = threads[0].id;
-let conversation = threads[0].conversation;
+let customTraining = "You are TaskAI, a helpful assistant for marketing and productivity tasks.";
+let threads = [];
+let currentThreadId = null;
+let conversation = [];
 
 // === LOGIN GATING SETUP ===
 let isUserLoggedIn = false;
+
+// === USER-SCOPED THREAD MANAGEMENT ===
+async function loadUserThreads() {
+  if (!isUserLoggedIn) {
+    threads = [];
+    currentThreadId = null;
+    conversation = [];
+    return;
+  }
+  
+  try {
+    const response = await fetch('/api/threads');
+    if (response.ok) {
+      const data = await response.json();
+      threads = data.threads || [];
+      
+      // If no threads exist, create a default one
+      if (threads.length === 0) {
+        await createNewThread();
+      } else {
+        currentThreadId = threads[0].id;
+        conversation = threads[0].conversation;
+      }
+    } else {
+      console.error('Failed to load threads');
+      threads = [];
+      await createNewThread();
+    }
+  } catch (error) {
+    console.error('Error loading threads:', error);
+    threads = [];
+    await createNewThread();
+  }
+}
+
+async function saveUserThreads() {
+  if (!isUserLoggedIn || threads.length === 0) {
+    return;
+  }
+  
+  try {
+    const response = await fetch('/api/threads', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ threads })
+    });
+    
+    if (!response.ok) {
+      console.error('Failed to save threads');
+    }
+  } catch (error) {
+    console.error('Error saving threads:', error);
+  }
+}
+
+async function createNewThread() {
+  const newThread = {
+    id: Date.now(),
+    title: "New Chat",
+    conversation: [{ role: "system", content: customTraining }],
+  };
+  
+  threads.unshift(newThread);
+  currentThreadId = newThread.id;
+  conversation = newThread.conversation;
+  
+  if (isUserLoggedIn) {
+    await saveUserThreads();
+  }
+}
+
+function clearUserData() {
+  threads = [];
+  currentThreadId = null;
+  conversation = [];
+  
+  // Clear any localStorage remnants
+  localStorage.removeItem("threads");
+  localStorage.removeItem("customTraining");
+}
 
 function switchThread(threadId) {
   currentThreadId = threadId;
@@ -103,6 +175,11 @@ function updateUI() {
   if (outputBox) outputBox.innerHTML = "";
   if (threadsList) threadsList.innerHTML = "";
 
+  // Only show content if user is logged in
+  if (!isUserLoggedIn) {
+    return;
+  }
+
   // Display messages
   conversation.forEach((msg) => {
     if (msg.role === "user" || msg.role === "assistant") {
@@ -120,14 +197,14 @@ function updateUI() {
     const deleteBtn = document.createElement("button");
     deleteBtn.textContent = "×";
     deleteBtn.className = "delete-thread";
-    deleteBtn.onclick = (e) => {
+    deleteBtn.onclick = async (e) => {
       e.stopPropagation();
       if (threads.length > 1) {
         threads = threads.filter((t) => t.id !== thread.id);
         if (currentThreadId === thread.id) {
           switchThread(threads[0].id);
         }
-        localStorage.setItem("threads", JSON.stringify(threads));
+        await saveUserThreads();
         updateUI();
       }
     };
@@ -640,13 +717,13 @@ async function submitPrompt(promptText) {
       }
     }
 
-    // Save threads to localStorage with error handling
+    // Save threads to server with error handling
     try {
-      localStorage.setItem("threads", JSON.stringify(threads));
+      await saveUserThreads();
       updateUI();
     } catch (storageError) {
-      console.warn("Failed to save to localStorage:", storageError);
-      showErrorMessage("Unable to save conversation locally. Your chat will not be persistent.", "warning");
+      console.warn("Failed to save to server:", storageError);
+      showErrorMessage("Unable to save conversation to server. Your chat may not be persistent.", "warning");
     }
     
   } catch (err) {
@@ -873,18 +950,13 @@ function hideTypingIndicator() {
 }
 
 // === NEW CHAT (RESET MEMORY) ===
-function newChat() {
-  const newThread = {
-    id: Date.now(),
-    title: "New Chat",
-    conversation: [{ role: "system", content: customTraining }],
-  };
+async function newChat() {
+  if (!isUserLoggedIn) {
+    showLoginModal();
+    return;
+  }
 
-  threads.unshift(newThread);
-  localStorage.setItem("threads", JSON.stringify(threads));
-
-  currentThreadId = newThread.id;
-  conversation = newThread.conversation;
+  await createNewThread();
 
   // Show header and quick chat for new conversations
   document.querySelector("header")?.classList.remove("fade-out");
@@ -893,8 +965,6 @@ function newChat() {
 
   const promptInput = document.getElementById("prompt-input");
   if (promptInput) promptInput.value = "";
-
-  
 
   updateUI();
 }
@@ -1169,46 +1239,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   }
 
-  // Update UI to show threads
-  updateUI();
-
-  // Check if current conversation has messages and hide header/quick-chat if needed
-  const currentThread = threads.find((t) => t.id === currentThreadId);
-  if (currentThread && currentThread.conversation.length > 1) {
-    document.querySelector("header")?.classList.add("fade-out");
-    document.querySelector(".quick-chat")?.classList.add("fade-out");
-    document.querySelector(".workspace")?.classList.add("no-quick-chat");
-  }
-
-  // Re-display saved conversation
-  const outputBox = document.getElementById("output-box");
-  const historyList = document.getElementById("history-list");
-
-  if (outputBox) {
-    outputBox.innerHTML = "";
-  }
-  if (historyList) {
-    historyList.innerHTML = "";
-  }
-
-  conversation.forEach((msg) => {
-    if (msg.role === "user") {
-      addMessage(msg.content, "user");
-      const item = document.createElement("li");
-      item.textContent = msg.content;
-      if (historyList) {
-        historyList.prepend(item);
-      }
-    } else if (msg.role === "assistant") {
-      addMessage(msg.content, "gpt");
-    }
-  });
-
-  if (conversation.length > 1) {
-    document.querySelector("header").classList.add("fade-out");
-    document.querySelector(".quick-chat").classList.add("fade-out");
-    document.querySelector(".workspace").classList.add("no-quick-chat");
-  }
+  // UI will be updated after auth check in auth.js
+  // No need to load threads here as they will be loaded based on login status
 
   setupTrainingEditor();
 

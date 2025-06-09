@@ -155,6 +155,7 @@ app.post('/chat', async (req, res) => {
 // User storage functions
 const fs = require('fs');
 const usersFile = 'users.json';
+const threadsFile = 'user_threads.json';
 
 function loadUsers() {
   try {
@@ -173,6 +174,36 @@ function saveUsers(users) {
   } catch (err) {
     console.error('Error saving users:', err);
   }
+}
+
+function loadUserThreads() {
+  try {
+    if (fs.existsSync(threadsFile)) {
+      return JSON.parse(fs.readFileSync(threadsFile, 'utf8'));
+    }
+  } catch (err) {
+    console.error('Error loading user threads:', err);
+  }
+  return {};
+}
+
+function saveUserThreads(userThreads) {
+  try {
+    fs.writeFileSync(threadsFile, JSON.stringify(userThreads, null, 2));
+  } catch (err) {
+    console.error('Error saving user threads:', err);
+  }
+}
+
+function getUserThreads(userId) {
+  const userThreads = loadUserThreads();
+  return userThreads[userId] || [];
+}
+
+function saveThreadsForUser(userId, threads) {
+  const userThreads = loadUserThreads();
+  userThreads[userId] = threads;
+  saveUserThreads(userThreads);
 }
 
 function findUserByEmail(email) {
@@ -321,6 +352,48 @@ app.get("/api/auth/status", (req, res) => {
     authenticated: true,
     user: userResponse
   });
+});
+
+// Thread management API endpoints
+app.get("/api/threads", (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+  
+  const userId = req.user.id;
+  const threads = getUserThreads(userId);
+  res.json({ threads });
+});
+
+app.post("/api/threads", (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+  
+  const userId = req.user.id;
+  const { threads } = req.body;
+  
+  if (!Array.isArray(threads)) {
+    return res.status(400).json({ error: "Threads must be an array" });
+  }
+  
+  saveThreadsForUser(userId, threads);
+  res.json({ success: true });
+});
+
+app.delete("/api/threads/:threadId", (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+  
+  const userId = req.user.id;
+  const threadId = parseInt(req.params.threadId);
+  
+  let threads = getUserThreads(userId);
+  threads = threads.filter(thread => thread.id !== threadId);
+  
+  saveThreadsForUser(userId, threads);
+  res.json({ success: true });
 });
 
 // Complete signup route
