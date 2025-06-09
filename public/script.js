@@ -172,13 +172,7 @@ function updateUI() {
   const outputBox = document.getElementById("output-box");
   const threadsList = document.getElementById("threads-list");
 
-  // FIXED: Preserve existing HTML in output-box, only clear messages
-  if (outputBox) {
-    // Only remove dynamically added messages, preserve original HTML
-    const messages = outputBox.querySelectorAll('.message, .message-container, .typing-indicator');
-    messages.forEach(msg => msg.remove());
-  }
-  
+  if (outputBox) outputBox.innerHTML = "";
   if (threadsList) threadsList.innerHTML = "";
 
   // Only show content if user is logged in
