@@ -74,8 +74,6 @@
             and boost productivity. Choose from our collection of specialized AI
             assistants.
           </p>
-
-          <!-- Search functionality -->
           <div class="search-container">
             <div class="search-wrapper">
               <div class="search-icon"><i data-lucide="search"></i></div>
@@ -222,38 +220,68 @@
 
       // Initialize page
       document.addEventListener("DOMContentLoaded", () => {
-        // Initialize Lucide icons AFTER DOM is loaded
-        lucide.createIcons();
-        
-        // Set theme
+        // Set theme first
         const savedTheme = localStorage.getItem("theme") || "dark";
         document.documentElement.setAttribute("data-theme", savedTheme);
 
+        // Initialize Lucide icons AFTER DOM is loaded
+        lucide.createIcons();
+        
+        // Protect and verify hero content
+        const heroSection = document.querySelector('.taskforce-hero');
+        const heroContent = document.querySelector('.taskforce-hero .hero-content');
+        const heroTitle = document.querySelector('.hero-title');
+        
+        // Ensure correct hero content is preserved
+        if (heroTitle && heroTitle.textContent !== 'Prismity Taskforce') {
+          heroTitle.textContent = 'Prismity Taskforce';
+        }
+        
         // Render templates
         renderTemplates();
         
-        // Protect hero content from being modified
-        const heroSection = document.querySelector('.taskforce-hero');
-        const heroContent = document.querySelector('.taskforce-hero .hero-content');
-        
+        // Create a robust protection system for hero content
         if (heroSection && heroContent) {
-          // Create a MutationObserver to watch for changes to hero content
+          // Store the original content
+          const originalContent = heroContent.innerHTML;
+          
+          // Create a MutationObserver to prevent unwanted changes
           const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
-              if (mutation.type === 'childList') {
-                // Re-initialize Lucide icons if hero content changes
-                const searchIcon = heroContent.querySelector('.search-icon i[data-lucide="search"]');
-                if (searchIcon && !searchIcon.querySelector('svg')) {
-                  lucide.createIcons();
-                }
+              // Check if hero title was changed
+              const currentTitle = heroContent.querySelector('.hero-title');
+              if (currentTitle && currentTitle.textContent !== 'Prismity Taskforce') {
+                currentTitle.textContent = 'Prismity Taskforce';
+              }
+              
+              // Re-initialize Lucide icons if search icon is missing
+              const searchIcon = heroContent.querySelector('.search-icon i[data-lucide="search"]');
+              if (searchIcon && !searchIcon.querySelector('svg')) {
+                lucide.createIcons();
               }
             });
           });
           
-          // Start observing the hero content
+          // Start observing with comprehensive options
           observer.observe(heroContent, {
             childList: true,
-            subtree: true
+            subtree: true,
+            characterData: true,
+            attributes: true
+          });
+          
+          // Additional protection: prevent any script from modifying hero content
+          Object.defineProperty(heroContent, 'innerHTML', {
+            get: function() { return this._innerHTML || originalContent; },
+            set: function(value) {
+              // Only allow setting if it contains the correct title
+              if (value.includes('Prismity Taskforce')) {
+                this._innerHTML = value;
+                Array.from(this.children).forEach(child => this.removeChild(child));
+                this.insertAdjacentHTML('afterbegin', value);
+                lucide.createIcons();
+              }
+            }
           });
         }
       });
