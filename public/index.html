@@ -246,8 +246,142 @@
     <script src="auth.js"></script>
     <script src="script.js"></script>
     <script>
-      // Initialize Lucide icons
-      lucide.createIcons();
+      // Initialize page with content protection
+      document.addEventListener("DOMContentLoaded", () => {
+        // Set theme first
+        const savedTheme = localStorage.getItem("theme") || "dark";
+        document.documentElement.setAttribute("data-theme", savedTheme);
+
+        // Initialize Lucide icons AFTER DOM is loaded
+        lucide.createIcons();
+        
+        // Store the correct Hero section content
+        const correctHeroContent = `
+          <h1 class="hero-title">PRISMiTY.AI</h1>
+          <p class="hero-subtitle">
+            Your <strong>AI-powered productivity assistant</strong> for marketing
+            and automation tasks. Get things done faster with intelligent
+            automation.
+          </p>
+          <div class="hero-stats">
+            <div class="stat-item">
+              <span class="stat-number">3+</span>
+              <span class="stat-label">AI Models</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">∞</span>
+              <span class="stat-label">Possibilities</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">24/7</span>
+              <span class="stat-label">Available</span>
+            </div>
+          </div>
+        `;
+        
+        // Protect and verify hero content
+        const heroSection = document.querySelector('.hero-section');
+        const heroContent = document.querySelector('.hero-content');
+        
+        // Ensure correct hero content is always present
+        function enforceCorrectHeroContent() {
+          if (heroContent) {
+            const currentTitle = heroContent.querySelector('.hero-title');
+            const currentSubtitle = heroContent.querySelector('.hero-subtitle');
+            const currentStats = heroContent.querySelector('.hero-stats');
+            
+            // Check if any essential element is missing or incorrect
+            if (!currentTitle || 
+                currentTitle.textContent !== 'PRISMiTY.AI' ||
+                !currentSubtitle ||
+                !currentSubtitle.textContent.includes('AI-powered productivity assistant') ||
+                !currentStats) {
+              
+              console.log('Restoring correct Hero section content');
+              heroContent.innerHTML = correctHeroContent;
+              lucide.createIcons();
+            }
+          }
+        }
+        
+        // Initial enforcement
+        enforceCorrectHeroContent();
+        
+        // Create a robust protection system for hero content
+        if (heroSection && heroContent) {
+          // Create a MutationObserver to prevent unwanted changes
+          const observer = new MutationObserver((mutations) => {
+            let needsRestoration = false;
+            
+            mutations.forEach((mutation) => {
+              // Check for any changes that might affect the hero content
+              if (mutation.type === 'childList' || 
+                  mutation.type === 'characterData' || 
+                  mutation.type === 'attributes') {
+                needsRestoration = true;
+              }
+            });
+            
+            if (needsRestoration) {
+              // Debounce the restoration to avoid infinite loops
+              setTimeout(() => {
+                enforceCorrectHeroContent();
+              }, 10);
+            }
+          });
+          
+          // Start observing with comprehensive options
+          observer.observe(heroContent, {
+            childList: true,
+            subtree: true,
+            characterData: true,
+            attributes: true
+          });
+          
+          // Additional protection: override any attempts to modify innerHTML
+          let isInternalUpdate = false;
+          const originalInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+          
+          Object.defineProperty(heroContent, 'innerHTML', {
+            get: function() {
+              return originalInnerHTML.get.call(this);
+            },
+            set: function(value) {
+              if (isInternalUpdate) {
+                originalInnerHTML.set.call(this, value);
+                return;
+              }
+              
+              // Only allow setting if it contains all correct elements
+              if (value.includes('PRISMiTY.AI') && 
+                  value.includes('AI-powered productivity assistant') &&
+                  value.includes('hero-stats')) {
+                isInternalUpdate = true;
+                originalInnerHTML.set.call(this, value);
+                isInternalUpdate = false;
+                lucide.createIcons();
+              } else {
+                console.log('Blocked attempt to modify Hero section with incorrect content');
+                // Restore correct content instead
+                isInternalUpdate = true;
+                originalInnerHTML.set.call(this, correctHeroContent);
+                isInternalUpdate = false;
+                lucide.createIcons();
+              }
+            }
+          });
+          
+          // Periodic check to ensure content stays correct
+          setInterval(enforceCorrectHeroContent, 1000);
+        }
+        
+        // Load auth.js functionality after protection is in place
+        setTimeout(() => {
+          if (typeof initializeAuth === 'function') {
+            initializeAuth();
+          }
+        }, 100);
+      });
     </script>
   </body>
 </html>
