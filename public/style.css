@@ -1072,16 +1072,15 @@ i {
   font-weight: 500;
 }
 
-/* FIXED: Enhanced workspace with dynamic width expansion - Protected from grid interference */
+/* FIXED: Enhanced workspace with dynamic width expansion */
 .workspace {
   flex: 1;
-  display: flex !important;
-  flex-direction: column !important;
+  display: flex;
+  flex-direction: column;
   padding: 20px;
   transition: var(--transition);
   max-width: calc(100vw - 320px);
   width: calc(100vw - 320px);
-  grid-template-columns: none !important;
 }
 
 /* FIXED: Workspace expands when sidebar is hidden */
@@ -1162,14 +1161,11 @@ i {
   left: 100%;
 }
 
-/* Enhanced chat container - Protected from grid interference */
+/* Enhanced chat container */
 .chat-container {
   flex: 1;
   margin-bottom: 20px;
   transition: var(--transition);
-  display: flex !important;
-  flex-direction: column !important;
-  grid-template-columns: none !important;
 }
 
 /* Expand chat container when quick chat is hidden */
@@ -1188,12 +1184,11 @@ i {
   min-height: 400px;
   max-height: 60vh;
   overflow-y: auto;
-  display: flex !important;
-  flex-direction: column !important;
+  display: flex;
+  flex-direction: column;
   gap: 16px;
   box-shadow: var(--shadow);
   border: 1px solid var(--border-color);
-  grid-template-columns: none !important;
 }
 
 /* Enhanced message styling with better typography */
@@ -2431,31 +2426,17 @@ a:focus-visible {
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-/* Templates Main Content - Scoped to templates page only */
+/* Templates Main Content */
 .templates-main {
   padding: 0 20px 40px;
 }
 
-/* Scope templates grid to only apply on templates page */
-.templates-main .templates-grid {
+.templates-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 24px;
   max-width: 1400px;
   margin: 0 auto;
-}
-
-/* Ensure hero sections are not affected by grid */
-.taskforce-hero,
-.hero-section {
-  display: block !important;
-  grid-template-columns: none !important;
-}
-
-.taskforce-hero .hero-content,
-.hero-section .hero-content {
-  display: block !important;
-  grid-template-columns: none !important;
 }
 
 /* Template Cards */
