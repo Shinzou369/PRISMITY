@@ -158,21 +158,37 @@
         },
       ];
 
-      // Render templates
+      // FIXED: Render templates without overwriting existing HTML
       function renderTemplates(templatesToRender = templates) {
         const grid = document.getElementById("templates-grid");
         const noResults = document.getElementById("no-results");
 
         if (templatesToRender.length === 0) {
           grid.style.display = "none";
-          noResults.style.display = "flex";
+          noResults.style.display = "block";
           return;
         }
 
-        grid.style.display = "grid";
+        // FIXED: Don't force grid display - preserve natural layout
+        grid.style.display = "block";
         noResults.style.display = "none";
 
-        grid.innerHTML = templatesToRender
+        // FIXED: Check if templates are already rendered to avoid overwriting HTML
+        const existingTemplates = grid.querySelectorAll('.template-card');
+        if (existingTemplates.length > 0 && templatesToRender === templates) {
+          // Templates already exist, don't overwrite
+          return;
+        }
+
+        // Only clear and re-render if this is a filtered search
+        const isFiltered = templatesToRender.length !== templates.length;
+        if (isFiltered) {
+          // Clear only for search results
+          grid.innerHTML = '';
+        }
+
+        // Add new templates without replacing existing HTML structure
+        const templateHTML = templatesToRender
           .map(
             (template) => `
         <div class="template-card" onclick="selectTemplate('${template.id}')">
@@ -188,6 +204,10 @@
       `,
           )
           .join("");
+
+        if (isFiltered || existingTemplates.length === 0) {
+          grid.innerHTML = templateHTML;
+        }
       }
 
       // Filter templates

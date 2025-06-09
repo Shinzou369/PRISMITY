@@ -1194,19 +1194,26 @@
     min-height: 400px;
     max-height: 60vh;
     overflow-y: auto;
-    /* Preserve natural block flow instead of forcing flex column */
-    display: block;
+    /* FIXED: Preserve natural document flow - no forced display */
+    /* Let content display naturally as written in HTML */
     box-shadow: var(--shadow);
     border: 1px solid var(--border-color);
   }
 
-  /* Add spacing between child elements naturally */
-  .output-box>* {
+  /* FIXED: Only add spacing to dynamically generated messages, not all children */
+  .output-box .message {
     margin-bottom: 16px;
   }
 
-  .output-box>*:last-child {
+  .output-box .message:last-child {
     margin-bottom: 0;
+  }
+
+  /* Preserve any existing HTML content as-is */
+  .output-box > :not(.message) {
+    /* Let original HTML content keep its natural styling */
+    margin: initial;
+    display: initial;
   }
 
   /* Enhanced message styling with better typography */
@@ -2398,6 +2405,13 @@
     transition: var(--transition);
   }
 
+  .taskforce-hero .hero-content {
+    /* Preserve natural block flow - no forced positioning */
+    display: block;
+    width: auto;
+    max-width: none;
+  }
+
   .taskforce-hero .hero-title {
     text-transform: none;
     /* allows your exact casing: PRISMiTY.AI */
@@ -2459,17 +2473,25 @@
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   }
 
-  /* Templates Main Content */
+  /* Templates Main Content - preserve natural flow */
   .templates-main {
     padding: 0 20px 40px;
   }
 
+  /* FIXED: Remove forced grid layout - let content flow naturally */
   .templates-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 24px;
+    /* Remove grid forcing - use natural block flow */
+    display: block;
     max-width: 1400px;
     margin: 0 auto;
+  }
+
+  /* If templates are dynamically added, style them as blocks */
+  .templates-grid .template-card {
+    display: inline-block;
+    width: 350px;
+    margin: 12px;
+    vertical-align: top;
   }
 
   /* Template Cards */
@@ -2653,12 +2675,18 @@
     max-width: 400px;
   }
 
-  /* Responsive Design for Templates */
+  /* Responsive Design for Templates - preserve natural flow */
   @media (max-width: 768px) {
     .templates-grid {
-      grid-template-columns: 1fr;
-      gap: 16px;
+      /* FIXED: No more forced grid columns */
       padding: 0 10px;
+    }
+
+    .templates-grid .template-card {
+      /* Stack naturally on mobile */
+      width: 100%;
+      margin: 8px 0;
+      display: block;
     }
 
     .template-card {
@@ -2689,8 +2717,13 @@
 
   @media (max-width: 480px) {
     .templates-grid {
-      grid-template-columns: 1fr;
+      /* FIXED: No forced grid */
       padding: 0 5px;
+    }
+
+    .templates-grid .template-card {
+      width: 100%;
+      margin: 6px 0;
     }
 
     .template-card {
