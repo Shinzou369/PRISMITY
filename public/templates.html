@@ -110,9 +110,6 @@
 
     <script src="auth.js"></script>
     <script>
-      // Initialize Lucide icons
-      lucide.createIcons();
-
       // Simple search functionality
       // Template data
       const templates = [
@@ -225,12 +222,40 @@
 
       // Initialize page
       document.addEventListener("DOMContentLoaded", () => {
+        // Initialize Lucide icons AFTER DOM is loaded
+        lucide.createIcons();
+        
         // Set theme
         const savedTheme = localStorage.getItem("theme") || "dark";
         document.documentElement.setAttribute("data-theme", savedTheme);
 
         // Render templates
         renderTemplates();
+        
+        // Protect hero content from being modified
+        const heroSection = document.querySelector('.taskforce-hero');
+        const heroContent = document.querySelector('.taskforce-hero .hero-content');
+        
+        if (heroSection && heroContent) {
+          // Create a MutationObserver to watch for changes to hero content
+          const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+              if (mutation.type === 'childList') {
+                // Re-initialize Lucide icons if hero content changes
+                const searchIcon = heroContent.querySelector('.search-icon i[data-lucide="search"]');
+                if (searchIcon && !searchIcon.querySelector('svg')) {
+                  lucide.createIcons();
+                }
+              }
+            });
+          });
+          
+          // Start observing the hero content
+          observer.observe(heroContent, {
+            childList: true,
+            subtree: true
+          });
+        }
       });
     </script>
   </body>
