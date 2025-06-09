@@ -9,6 +9,11 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
+    <!-- Added subtle animations library -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   </head>
@@ -16,33 +21,29 @@
     <!-- Enhanced top navigation bar with Back to Home button -->
     <nav class="top-nav animate__animated animate__fadeInDown">
       <div class="nav-left">
-        <button class="toggle-btn back-btn" onclick="goBackToMain()">
-          <div class="nav-left">
-            <a href="/" class="back-btn" aria-label="Back to Home">
-              <svg
-                class="back-icon"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                viewBox="0 0 24 24"
-              >
-                <polyline points="15 18 9 12 15 6"></polyline>
-              </svg>
-            </a>
-          </div>
-        </button>
+        <a href="/" class="back-btn" aria-label="Back to Home">
+          <svg
+            class="back-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            viewBox="0 0 24 24"
+          >
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </a>
         <div class="logo-container">
           <img
             src="Logo_of_an_AI_called_Prismity.png"
             alt="Prismity AI"
             class="logo-icon"
           />
-          <span class="logo-text">Prismity.AI TaskForce</span>
+          <span class="logo-text">Prismity Taskforce</span>
         </div>
       </div>
 
@@ -54,10 +55,12 @@
         <div class="auth-container" id="auth-container">
           <!-- Auth content will be populated by auth.js -->
         </div>
-        <a href="admin.html" class="admin-link" title="Model Configuration"
-          >⚙️</a
-        >
-        <button class="theme-btn" onclick="toggleTheme()">🌓</button>
+        <a href="admin.html" class="admin-link" title="Model Configuration">
+          <i data-lucide="settings"></i>
+        </a>
+        <button class="theme-btn" onclick="toggleTheme()">
+          <i data-lucide="moon"></i>
+        </button>
       </div>
     </nav>
 
