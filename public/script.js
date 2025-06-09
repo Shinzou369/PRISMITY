@@ -1154,6 +1154,31 @@ function toggleTheme() {
   setTheme(newTheme);
 }
 
+// Protect main layout elements from grid interference
+function protectLayoutElements() {
+  const protectedElements = [
+    '.workspace',
+    '.chat-container', 
+    '.output-box',
+    '.hero-section',
+    '.taskforce-hero',
+    '.hero-content'
+  ];
+  
+  protectedElements.forEach(selector => {
+    const elements = document.querySelectorAll(selector);
+    elements.forEach(el => {
+      if (el) {
+        el.style.gridTemplateColumns = 'none';
+        if (selector.includes('workspace') || selector.includes('chat') || selector.includes('output')) {
+          el.style.display = 'flex';
+          el.style.flexDirection = 'column';
+        }
+      }
+    });
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   // Initialize highlight.js
   if (typeof hljs !== 'undefined') {
@@ -1165,6 +1190,19 @@ document.addEventListener("DOMContentLoaded", () => {
   // Set initial theme
   const savedTheme = localStorage.getItem("theme") || "dark";
   setTheme(savedTheme);
+
+  // Protect layout elements from interference
+  protectLayoutElements();
+  
+  // Re-protect elements after any dynamic content changes
+  const observer = new MutationObserver(() => {
+    protectLayoutElements();
+  });
+  
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
 
   // Initialize connection monitoring
   updateConnectionStatus();

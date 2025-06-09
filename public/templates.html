@@ -158,6 +158,11 @@
         const grid = document.getElementById("templates-grid");
         const noResults = document.getElementById("no-results");
 
+        if (!grid || !noResults) {
+          console.warn("Templates grid or no-results element not found");
+          return;
+        }
+
         if (templatesToRender.length === 0) {
           grid.style.display = "none";
           noResults.style.display = "flex";
@@ -170,9 +175,15 @@
         grid.innerHTML = templatesToRender
           .map(
             (template) => `
-        <div class="template-card">
-          <h3>${template.title}</h3>
-          <p>${template.description}</p>
+        <div class="template-card" onclick="selectTemplate('${template.id}')">
+          <div class="card-icon">${template.title.split(' ')[0]}</div>
+          <h3 class="card-title">${template.title}</h3>
+          <p class="card-description">${template.description}</p>
+          <div class="card-tags">
+            ${template.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+          </div>
+          <div class="card-arrow">→</div>
+          <div class="coming-soon-overlay">Coming Soon</div>
         </div>
       `,
           )
@@ -218,8 +229,15 @@
         const savedTheme = localStorage.getItem("theme") || "dark";
         document.documentElement.setAttribute("data-theme", savedTheme);
 
-        // Render templates
-        renderTemplates();
+        // Only render templates if we're on the templates page
+        if (document.getElementById("templates-grid")) {
+          renderTemplates();
+        }
+
+        // Initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+          lucide.createIcons();
+        }
       });
     </script>
   </body>
