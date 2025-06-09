@@ -158,29 +158,13 @@ function updateTopNavForGuest() {
 }
 
 function personalizeHeroTitle(user) {
-  const heroTitle = document.querySelector('.hero-title');
-  const heroSubtitle = document.querySelector('.hero-subtitle');
-
-  if (heroTitle) {
-    const displayName = user.preferredFirstName || user.name.split(' ')[0];
-    const greeting = user.isComplete && user.preferredFirstName ? `Welcome back, ${displayName}!` : `Welcome, ${displayName}!`;
-    heroTitle.textContent = greeting;
-  }
-
-  if (heroSubtitle) {
-    heroSubtitle.innerHTML = `Ready to boost your productivity with <strong>PRISMiTY.AI</strong>? Let's get things done faster with intelligent automation.`;
-  }
+  // Content protection system will handle hero content
+  // We'll store user info for other uses but not modify protected content
+  console.log('User personalization data available:', user);
 }
 
 function showGenericHeroTitle() {
-  const heroTitle = document.querySelector('.hero-title');
-  const heroSubtitle = document.querySelector('.hero-subtitle');
-
-  if (heroTitle) {
-    heroTitle.textContent = 'PRISMiTY.AI';
-  }
-
-  if (heroSubtitle) {
-    heroSubtitle.innerHTML = `Your <strong>AI-powered productivity assistant</strong> for marketing and automation tasks. Get things done faster with intelligent automation.`;
-  }
+  // Content protection system will handle hero content
+  // No direct DOM manipulation of protected elements
+  console.log('Showing generic hero title (handled by protection system)');
 }
