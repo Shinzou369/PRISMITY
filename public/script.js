@@ -77,13 +77,13 @@ async function loadUserThreads() {
     conversation = [];
     return;
   }
-  
+
   try {
     const response = await fetch('/api/threads');
     if (response.ok) {
       const data = await response.json();
       threads = data.threads || [];
-      
+
       // If no threads exist, create a default one
       if (threads.length === 0) {
         await createNewThread();
@@ -107,7 +107,7 @@ async function saveUserThreads() {
   if (!isUserLoggedIn || threads.length === 0) {
     return;
   }
-  
+
   try {
     const response = await fetch('/api/threads', {
       method: 'POST',
@@ -116,7 +116,7 @@ async function saveUserThreads() {
       },
       body: JSON.stringify({ threads })
     });
-    
+
     if (!response.ok) {
       console.error('Failed to save threads');
     }
@@ -131,11 +131,11 @@ async function createNewThread() {
     title: "New Chat",
     conversation: [{ role: "system", content: customTraining }],
   };
-  
+
   threads.unshift(newThread);
   currentThreadId = newThread.id;
   conversation = newThread.conversation;
-  
+
   if (isUserLoggedIn) {
     await saveUserThreads();
   }
@@ -145,7 +145,7 @@ function clearUserData() {
   threads = [];
   currentThreadId = null;
   conversation = [];
-  
+
   // Clear any localStorage remnants
   localStorage.removeItem("threads");
   localStorage.removeItem("customTraining");
@@ -220,7 +220,7 @@ function updateUI() {
 // === UI HELPERS ===
 function formatMarkdown(text) {
   if (!text) return '';
-  
+
   // Configure marked options
   marked.setOptions({
     highlight: function(code, lang) {
@@ -247,7 +247,7 @@ function formatMarkdown(text) {
   try {
     // Parse markdown
     let html = marked.parse(text);
-    
+
     // Sanitize the HTML to prevent XSS attacks while preserving code highlighting
     if (typeof DOMPurify !== 'undefined') {
       html = DOMPurify.sanitize(html, {
@@ -283,15 +283,15 @@ function addMessage(content, type = "gpt", model = null) {
   // Handle different message types
   if (type === "gpt") {
     msg.innerHTML = formatMarkdown(content);
-    
+
     // Initialize syntax highlighting for code blocks
     msg.querySelectorAll('pre code').forEach((block) => {
       hljs.highlightElement(block);
     });
-    
+
     // Add copy button to GPT messages
     addCopyButton(msg);
-    
+
     // Add copy buttons to code blocks
     addCodeBlockCopyButtons(msg);
   } else if (type === "system") {
@@ -352,7 +352,7 @@ function showErrorMessage(message, type = 'error') {
       <button class="error-close" onclick="this.parentElement.parentElement.remove()">×</button>
     </div>
   `;
-  
+
   // Add styles if not already present
   if (!document.querySelector('#error-styles')) {
     const errorStyles = document.createElement('style');
@@ -370,22 +370,22 @@ function showErrorMessage(message, type = 'error') {
         max-width: 400px;
         animation: slideInRight 0.3s ease-out;
       }
-      
+
       .error-notification.error {
         border-color: #ef4444;
         background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), var(--bg-secondary));
       }
-      
+
       .error-notification.warning {
         border-color: #f59e0b;
         background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), var(--bg-secondary));
       }
-      
+
       .error-notification.info {
         border-color: #3b82f6;
         background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), var(--bg-secondary));
       }
-      
+
       .error-content {
         display: flex;
         align-items: center;
@@ -393,19 +393,19 @@ function showErrorMessage(message, type = 'error') {
         padding: 16px;
         color: var(--text-primary);
       }
-      
+
       .error-content i {
         flex-shrink: 0;
         width: 20px;
         height: 20px;
       }
-      
+
       .error-content span {
         flex: 1;
         font-size: 0.9rem;
         line-height: 1.4;
       }
-      
+
       .error-close {
         background: none;
         border: none;
@@ -421,12 +421,12 @@ function showErrorMessage(message, type = 'error') {
         border-radius: 50%;
         transition: var(--transition);
       }
-      
+
       .error-close:hover {
         background: rgba(255, 255, 255, 0.1);
         color: var(--text-primary);
       }
-      
+
       @keyframes slideInRight {
         from {
           transform: translateX(100%);
@@ -437,7 +437,7 @@ function showErrorMessage(message, type = 'error') {
           opacity: 1;
         }
       }
-      
+
       @media (max-width: 480px) {
         .error-notification {
           right: 10px;
@@ -448,9 +448,9 @@ function showErrorMessage(message, type = 'error') {
     `;
     document.head.appendChild(errorStyles);
   }
-  
+
   document.body.appendChild(errorDiv);
-  
+
   // Auto-remove after 5 seconds
   setTimeout(() => {
     if (errorDiv.parentElement) {
@@ -458,7 +458,7 @@ function showErrorMessage(message, type = 'error') {
       setTimeout(() => errorDiv.remove(), 300);
     }
   }, 5000);
-  
+
   // Initialize lucide icons for the error message
   lucide.createIcons();
 }
@@ -471,7 +471,7 @@ function getErrorMessage(error, response) {
   if (!checkNetworkConnection()) {
     return "No internet connection. Please check your network and try again.";
   }
-  
+
   if (response) {
     switch (response.status) {
       case 429:
@@ -491,15 +491,15 @@ function getErrorMessage(error, response) {
         return "Network error. Please check your connection and try again.";
     }
   }
-  
+
   if (error.name === 'TypeError' && error.message.includes('fetch')) {
     return "Unable to connect to the server. Please check your internet connection.";
   }
-  
+
   if (error.message.includes('timeout')) {
     return "Request timed out. The AI might be busy. Please try again.";
   }
-  
+
   return "An unexpected error occurred. Please try again or contact support if the problem persists.";
 }
 
@@ -507,13 +507,13 @@ function getErrorMessage(error, response) {
 async function getGPTResponse(model) {
   const maxRetries = 2;
   let retryCount = 0;
-  
+
   while (retryCount <= maxRetries) {
     try {
       // Add timeout to fetch request
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-      
+
       const response = await fetch('/chat', {
         method: 'POST',
         headers: {
@@ -536,9 +536,9 @@ async function getGPTResponse(model) {
         } catch (parseError) {
           errorData = { error: 'Invalid response from server' };
         }
-        
+
         const errorMessage = getErrorMessage(new Error(errorData.error), response);
-        
+
         // Show specific error to user
         if (response.status === 429 && retryCount < maxRetries) {
           showErrorMessage(`Rate limit exceeded. Retrying in ${(retryCount + 1) * 2} seconds...`, 'warning');
@@ -546,21 +546,21 @@ async function getGPTResponse(model) {
           retryCount++;
           continue;
         }
-        
+
         throw new Error(errorMessage);
       }
 
       const data = await response.json();
-      
+
       if (!data.message || !data.message.content) {
         throw new Error("Invalid response format from AI service");
       }
-      
+
       return data.message.content.trim();
-      
+
     } catch (error) {
       console.error(`API call attempt ${retryCount + 1} failed:`, error);
-      
+
       if (error.name === 'AbortError') {
         const timeoutError = "Request timed out. The AI service might be busy. Please try again.";
         if (retryCount < maxRetries) {
@@ -573,7 +573,7 @@ async function getGPTResponse(model) {
           return "Sorry, the request timed out. Please try again with a shorter message or try again later.";
         }
       }
-      
+
       if (retryCount < maxRetries && !error.message.includes('Authentication')) {
         showErrorMessage(`Error occurred. Retrying... (${retryCount + 1}/${maxRetries})`, 'warning');
         retryCount++;
@@ -585,7 +585,7 @@ async function getGPTResponse(model) {
       }
     }
   }
-  
+
   return "Sorry, I'm unable to process your request right now. Please try again later or contact support if the problem persists.";
 }
 
@@ -697,7 +697,7 @@ async function submitPrompt(promptText) {
         messageContent.appendChild(modelIndicator);
         messageContainer.appendChild(messageContent);
         lastGpt.replaceWith(messageContainer);
-        
+
         // Initialize syntax highlighting and copy buttons
         messageContainer.querySelectorAll('pre code').forEach((block) => {
           hljs.highlightElement(block);
@@ -716,7 +716,7 @@ async function submitPrompt(promptText) {
         conversation.push({ role: "user", content: titlePrompt });
         const titleResponse = await getGPTResponse("gpt-3.5-turbo");
         conversation.pop(); // Remove the title prompt from conversation
-        
+
         if (titleResponse && !titleResponse.startsWith("Sorry")) {
           currentThread.title = titleResponse.replace(/["']/g, "").slice(0, 40);
         } else {
@@ -737,14 +737,14 @@ async function submitPrompt(promptText) {
       console.warn("Failed to save to server:", storageError);
       showErrorMessage("Unable to save conversation to server. Your chat may not be persistent.", "warning");
     }
-    
+
   } catch (err) {
     console.error("Submit error:", err);
     hideTypingIndicator();
-    
+
     // More specific error handling
     let errorMessage = "Sorry, there was an unexpected error. Please try again.";
-    
+
     if (err.message.includes("Failed to fetch")) {
       errorMessage = "Unable to connect to the AI service. Please check your internet connection and try again.";
     } else if (err.message.includes("timeout")) {
@@ -752,10 +752,10 @@ async function submitPrompt(promptText) {
     } else if (err.message.includes("rate limit")) {
       errorMessage = "Too many requests. Please wait a moment before trying again.";
     }
-    
+
     addMessage(errorMessage, "gpt");
     showErrorMessage("Failed to get AI response. " + errorMessage, "error");
-    
+
   } finally {
     // Enhanced button state restoration
     const submitBtn = document.getElementById("submit-btn");
@@ -819,7 +819,7 @@ function addCodeBlockCopyButtons(messageElement) {
       opacity: 0;
       z-index: 10;
     `;
-    
+
     copyBtn.onclick = async (e) => {
       e.stopPropagation();
       try {
@@ -839,7 +839,7 @@ function addCodeBlockCopyButtons(messageElement) {
         console.error('Failed to copy code: ', err);
       }
     };
-    
+
     // Show/hide copy button on hover
     pre.style.position = "relative";
     pre.addEventListener('mouseenter', () => {
@@ -848,7 +848,7 @@ function addCodeBlockCopyButtons(messageElement) {
     pre.addEventListener('mouseleave', () => {
       copyBtn.style.opacity = "0";
     });
-    
+
     pre.appendChild(copyBtn);
   });
 }
@@ -868,7 +868,7 @@ function smoothScrollToBottom() {
 function openCustomerService() {
   const helpMessage = "Here are some frequently asked questions:\n\n• How do I use Prismity AI?\n• What AI models are available?\n• How do I start a new conversation?\n• Can I export my chat history?\n• How do I change themes?\n\nFor more help, you can ask me anything or contact our support team!";
   addMessage(helpMessage, "system");
-  
+
   // Scroll to show the message
   const box = document.getElementById("output-box");
   if (box) {
@@ -934,24 +934,29 @@ function hideLoginModal() {
   }
 }
 
-// Enhanced typing indicator
 function showTypingIndicator() {
-  const box = document.getElementById("output-box");
-  if (!box) return;
+  const outputBox = document.getElementById("output-box");
+  const typingId = "typing-indicator";
 
-  const typingDiv = document.createElement("div");
-  typingDiv.className = "message gpt typing-indicator";
-  typingDiv.id = "typing-indicator";
+  // Create typing indicator element using DOM methods
+  const typingDiv = document.createElement('div');
+  typingDiv.className = 'message gpt typing animate__animated animate__fadeInUp';
+  typingDiv.id = typingId;
   typingDiv.innerHTML = `
-    <div class="typing-dots">
-      <span></span>
-      <span></span>
-      <span></span>
+    <div class="message-content">
+      <div class="typing-indicator">
+        <div class="typing-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <span class="typing-text">Prismity is thinking...</span>
+      </div>
     </div>
   `;
 
-  box.appendChild(typingDiv);
-  smoothScrollToBottom();
+  outputBox.appendChild(typingDiv);
+  outputBox.scrollTop = outputBox.scrollHeight;
 }
 
 function hideTypingIndicator() {
@@ -1107,7 +1112,7 @@ function initializeSpiritualWorld() {
 function updateConnectionStatus() {
   const statusIndicator = document.querySelector('.status-indicator');
   const statusText = document.querySelector('.status-text');
-  
+
   if (statusIndicator && statusText) {
     if (navigator.onLine) {
       statusIndicator.innerHTML = '<i data-lucide="check-circle"></i>';
@@ -1127,7 +1132,7 @@ function updateConnectionStatus() {
 // Add loading state improvements
 function setButtonLoading(button, isLoading, originalText = '') {
   if (!button) return;
-  
+
   if (isLoading) {
     button.disabled = true;
     button.dataset.originalText = button.innerHTML;
@@ -1218,7 +1223,7 @@ document.addEventListener("DOMContentLoaded", () => {
           submitPrompt(prompt);
         }
       }
-      
+
       // Escape to clear input
       if (e.key === "Escape") {
         promptInput.value = "";
@@ -1236,13 +1241,13 @@ document.addEventListener("DOMContentLoaded", () => {
         promptInput.focus();
       }
     }
-    
+
     // Ctrl/Cmd + N for new chat
     if ((e.ctrlKey || e.metaKey) && e.key === "n") {
       e.preventDefault();
       newChat();
     }
-    
+
     // Ctrl/Cmd + B to toggle sidebar
     if ((e.ctrlKey || e.metaKey) && e.key === "b") {
       e.preventDefault();
@@ -1313,4 +1318,127 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("clear-chat")?.addEventListener("click", newChat);
+
+  // Enhanced message rendering for conversation history
+function renderMessages() {
+  const outputBox = document.getElementById("output-box");
+
+  // Clear existing messages properly
+  while (outputBox.firstChild) {
+    outputBox.removeChild(outputBox.firstChild);
+  }
+
+  conversation.forEach((msg, index) => {
+    if (msg.role !== "system") {
+      const sender = msg.role === "user" ? "user" : "gpt";
+      const messageId = `msg-${index}-${Date.now()}`;
+
+      // Create message element using DOM methods
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${sender}`;
+      messageDiv.id = messageId;
+
+      if (sender === "user") {
+        messageDiv.innerHTML = `
+          <div class="message-content">
+            <div class="message-text">${escapeHtml(msg.content)}</div>
+            <button class="copy-btn" onclick="copyMessage('${messageId}')" title="Copy message">
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+        `;
+      } else {
+        messageDiv.innerHTML = `
+          <div class="message-header">
+            <div class="model-info">
+              <i data-lucide="brain" class="model-icon"></i>
+              <span class="model-name">GPT</span>
+            </div>
+            <div class="message-actions">
+              <button class="copy-btn" onclick="copyMessage('${messageId}')" title="Copy message">
+                <i data-lucide="copy"></i>
+              </button>
+            </div>
+          </div>
+          <div class="message-content">
+            <div class="message-text">${formatMessage(msg.content)}</div>
+          </div>
+        `;
+      }
+
+      // Append each message individually
+      outputBox.appendChild(messageDiv);
+    }
+  });
+
+  // Initialize Lucide icons after all messages are added
+  lucide.createIcons();
+
+  // Scroll to bottom
+  setTimeout(() => {
+    outputBox.scrollTop = outputBox.scrollHeight;
+  }, 100);
+}
+
+// === MESSAGE HANDLING ===
+function addMessage(content, sender, model = null, tokens = null) {
+  const outputBox = document.getElementById("output-box");
+  const messageId = `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+  // Create message element using DOM methods instead of innerHTML
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `message ${sender} animate__animated animate__fadeInUp`;
+  messageDiv.id = messageId;
+
+  if (sender === "user") {
+    messageDiv.innerHTML = `
+      <div class="message-content">
+        <div class="message-text">${escapeHtml(content)}</div>
+        <button class="copy-btn" onclick="copyMessage('${messageId}')" title="Copy message">
+          <i data-lucide="copy"></i>
+        </button>
+      </div>
+    `;
+  } else {
+    // Enhanced GPT message with model info and metadata
+    const modelDisplay = model ? model.replace('gpt-', 'GPT-').replace('deepseek-chat', 'DeepSeek') : 'GPT';
+    const tokensDisplay = tokens ? ` • ${tokens} tokens` : '';
+
+    messageDiv.innerHTML = `
+      <div class="message-header">
+        <div class="model-info">
+          <i data-lucide="brain" class="model-icon"></i>
+          <span class="model-name">${modelDisplay}</span>
+          <span class="model-meta">${tokensDisplay}</span>
+        </div>
+        <div class="message-actions">
+          <button class="copy-btn" onclick="copyMessage('${messageId}')" title="Copy message">
+            <i data-lucide="copy"></i>
+          </button>
+        </div>
+      </div>
+      <div class="message-content">
+        <div class="message-text">${formatMessage(content)}</div>
+      </div>
+    `;
+  }
+
+  // Append the message element (prevents DOM re-parsing)
+  outputBox.appendChild(messageDiv);
+
+  // Initialize Lucide icons for the new message only
+  lucide.createIcons();
+
+  // Scroll to bottom with smooth animation
+  setTimeout(() => {
+    outputBox.scrollTop = outputBox.scrollHeight;
+  }, 100);
+}
+  // Periodic check to ensure content stays correct (only for hero section)
+          setInterval(() => {
+            // Only check hero content, avoid interfering with chat messages
+            if (document.querySelector('.hero-section')) {
+               enforceCorrectHeroContent();
+            }
+          }, 1000);
 });
