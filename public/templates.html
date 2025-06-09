@@ -227,39 +227,80 @@
         // Initialize Lucide icons AFTER DOM is loaded
         lucide.createIcons();
         
+        // Store the correct Hero section content
+        const correctHeroContent = `
+          <h1 class="hero-title">Prismity Taskforce</h1>
+          <p class="hero-subtitle">
+            Discover powerful AI templates designed to automate your workflow
+            and boost productivity. Choose from our collection of specialized AI
+            assistants.
+          </p>
+          <div class="search-container">
+            <div class="search-wrapper">
+              <div class="search-icon"><i data-lucide="search"></i></div>
+              <input
+                type="text"
+                id="search-input"
+                class="search-input"
+                placeholder="Search templates..."
+                oninput="filterTemplates()"
+              />
+            </div>
+          </div>
+        `;
+        
         // Protect and verify hero content
         const heroSection = document.querySelector('.taskforce-hero');
         const heroContent = document.querySelector('.taskforce-hero .hero-content');
-        const heroTitle = document.querySelector('.hero-title');
         
-        // Ensure correct hero content is preserved
-        if (heroTitle && heroTitle.textContent !== 'Prismity Taskforce') {
-          heroTitle.textContent = 'Prismity Taskforce';
+        // Ensure correct hero content is always present
+        function enforceCorrectHeroContent() {
+          if (heroContent) {
+            const currentTitle = heroContent.querySelector('.hero-title');
+            const currentSubtitle = heroContent.querySelector('.hero-subtitle');
+            const currentSearch = heroContent.querySelector('.search-container');
+            
+            // Check if any essential element is missing or incorrect
+            if (!currentTitle || 
+                currentTitle.textContent !== 'Prismity Taskforce' ||
+                !currentSubtitle ||
+                !currentSubtitle.textContent.includes('Discover powerful AI templates') ||
+                !currentSearch) {
+              
+              console.log('Restoring correct Hero section content');
+              heroContent.innerHTML = correctHeroContent;
+              lucide.createIcons();
+            }
+          }
         }
+        
+        // Initial enforcement
+        enforceCorrectHeroContent();
         
         // Render templates
         renderTemplates();
         
         // Create a robust protection system for hero content
         if (heroSection && heroContent) {
-          // Store the original content
-          const originalContent = heroContent.innerHTML;
-          
           // Create a MutationObserver to prevent unwanted changes
           const observer = new MutationObserver((mutations) => {
+            let needsRestoration = false;
+            
             mutations.forEach((mutation) => {
-              // Check if hero title was changed
-              const currentTitle = heroContent.querySelector('.hero-title');
-              if (currentTitle && currentTitle.textContent !== 'Prismity Taskforce') {
-                currentTitle.textContent = 'Prismity Taskforce';
-              }
-              
-              // Re-initialize Lucide icons if search icon is missing
-              const searchIcon = heroContent.querySelector('.search-icon i[data-lucide="search"]');
-              if (searchIcon && !searchIcon.querySelector('svg')) {
-                lucide.createIcons();
+              // Check for any changes that might affect the hero content
+              if (mutation.type === 'childList' || 
+                  mutation.type === 'characterData' || 
+                  mutation.type === 'attributes') {
+                needsRestoration = true;
               }
             });
+            
+            if (needsRestoration) {
+              // Debounce the restoration to avoid infinite loops
+              setTimeout(() => {
+                enforceCorrectHeroContent();
+              }, 10);
+            }
           });
           
           // Start observing with comprehensive options
@@ -270,19 +311,41 @@
             attributes: true
           });
           
-          // Additional protection: prevent any script from modifying hero content
+          // Additional protection: override any attempts to modify innerHTML
+          let isInternalUpdate = false;
+          const originalInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+          
           Object.defineProperty(heroContent, 'innerHTML', {
-            get: function() { return this._innerHTML || originalContent; },
+            get: function() {
+              return originalInnerHTML.get.call(this);
+            },
             set: function(value) {
-              // Only allow setting if it contains the correct title
-              if (value.includes('Prismity Taskforce')) {
-                this._innerHTML = value;
-                Array.from(this.children).forEach(child => this.removeChild(child));
-                this.insertAdjacentHTML('afterbegin', value);
+              if (isInternalUpdate) {
+                originalInnerHTML.set.call(this, value);
+                return;
+              }
+              
+              // Only allow setting if it contains all correct elements
+              if (value.includes('Prismity Taskforce') && 
+                  value.includes('Discover powerful AI templates') &&
+                  value.includes('search-container')) {
+                isInternalUpdate = true;
+                originalInnerHTML.set.call(this, value);
+                isInternalUpdate = false;
+                lucide.createIcons();
+              } else {
+                console.log('Blocked attempt to modify Hero section with incorrect content');
+                // Restore correct content instead
+                isInternalUpdate = true;
+                originalInnerHTML.set.call(this, correctHeroContent);
+                isInternalUpdate = false;
                 lucide.createIcons();
               }
             }
           });
+          
+          // Periodic check to ensure content stays correct
+          setInterval(enforceCorrectHeroContent, 1000);
         }
       });
     </script>
