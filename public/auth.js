@@ -1,4 +1,3 @@
-
 // Authentication helper functions
 async function checkAuthStatus() {
   try {
@@ -39,7 +38,7 @@ function logout() {
 // Check auth status on page load
 document.addEventListener('DOMContentLoaded', async () => {
   const authStatus = await checkAuthStatus();
-  
+
   if (authStatus.authenticated) {
     // User is logged in - show main interface
     console.log('User logged in:', authStatus.user);
@@ -57,29 +56,29 @@ async function updateUIForLoggedInUser(user) {
   if (typeof isUserLoggedIn !== 'undefined') {
     isUserLoggedIn = true;
   }
-  
+
   // Load user's threads from server
   if (typeof loadUserThreads !== 'undefined') {
     await loadUserThreads();
   }
-  
+
   // Update top navigation with user info
   updateTopNavForUser(user);
-  
+
   // Personalize hero title
   personalizeHeroTitle(user);
-  
+
   // Remove any existing login prompts
   const existingLoginBtn = document.querySelector('.auth-placeholder');
   if (existingLoginBtn) {
     existingLoginBtn.remove();
   }
-  
+
   // Hide login modal if it's showing
   if (typeof hideLoginModal !== 'undefined') {
     hideLoginModal();
   }
-  
+
   // Update UI with user's data
   if (typeof updateUI !== 'undefined') {
     updateUI();
@@ -91,18 +90,18 @@ function showLoginOption() {
   if (typeof isUserLoggedIn !== 'undefined') {
     isUserLoggedIn = false;
   }
-  
+
   // Clear user data
   if (typeof clearUserData !== 'undefined') {
     clearUserData();
   }
-  
+
   // Update top navigation for non-authenticated user
   updateTopNavForGuest();
-  
+
   // Show generic hero title
   showGenericHeroTitle();
-  
+
   // Update UI to show empty state
   if (typeof updateUI !== 'undefined') {
     updateUI();
@@ -111,13 +110,13 @@ function showLoginOption() {
 
 function updateTopNavForUser(user) {
   const navRight = document.querySelector('.nav-right');
-  
+
   // Remove existing auth elements
   const existingAuth = navRight.querySelector('.auth-container');
   if (existingAuth) {
     existingAuth.remove();
   }
-  
+
   // Create user info container
   const authContainer = document.createElement('div');
   authContainer.className = 'auth-container';
@@ -130,7 +129,7 @@ function updateTopNavForUser(user) {
       <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
   `;
-  
+
   // Insert before existing nav items
   const firstChild = navRight.firstChild;
   navRight.insertBefore(authContainer, firstChild);
@@ -138,13 +137,13 @@ function updateTopNavForUser(user) {
 
 function updateTopNavForGuest() {
   const navRight = document.querySelector('.nav-right');
-  
+
   // Remove existing auth elements
   const existingAuth = navRight.querySelector('.auth-container');
   if (existingAuth) {
     existingAuth.remove();
   }
-  
+
   // Create login/signup container
   const authContainer = document.createElement('div');
   authContainer.className = 'auth-container';
@@ -152,7 +151,7 @@ function updateTopNavForGuest() {
     <button class="login-btn" onclick="initiateGoogleLogin()">Login</button>
     <button class="signup-btn" onclick="initiateGoogleLogin()">Sign Up</button>
   `;
-  
+
   // Insert before existing nav items
   const firstChild = navRight.firstChild;
   navRight.insertBefore(authContainer, firstChild);
@@ -161,13 +160,13 @@ function updateTopNavForGuest() {
 function personalizeHeroTitle(user) {
   const heroTitle = document.querySelector('.hero-title');
   const heroSubtitle = document.querySelector('.hero-subtitle');
-  
+
   if (heroTitle) {
     const displayName = user.preferredFirstName || user.name.split(' ')[0];
     const greeting = user.isComplete && user.preferredFirstName ? `Welcome back, ${displayName}!` : `Welcome, ${displayName}!`;
     heroTitle.textContent = greeting;
   }
-  
+
   if (heroSubtitle) {
     heroSubtitle.innerHTML = `Ready to boost your productivity with <strong>PRISMiTY.AI</strong>? Let's get things done faster with intelligent automation.`;
   }
@@ -176,11 +175,11 @@ function personalizeHeroTitle(user) {
 function showGenericHeroTitle() {
   const heroTitle = document.querySelector('.hero-title');
   const heroSubtitle = document.querySelector('.hero-subtitle');
-  
+
   if (heroTitle) {
     heroTitle.textContent = 'PRISMiTY.AI';
   }
-  
+
   if (heroSubtitle) {
     heroSubtitle.innerHTML = `Your <strong>AI-powered productivity assistant</strong> for marketing and automation tasks. Get things done faster with intelligent automation.`;
   }

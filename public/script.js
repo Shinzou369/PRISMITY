@@ -219,42 +219,54 @@ function updateUI() {
 
 // === UI HELPERS ===
 function formatMarkdown(text) {
+  if (!text) return '';
+  
   // Configure marked options
   marked.setOptions({
     highlight: function(code, lang) {
-      if (lang && hljs.getLanguage(lang)) {
-        try {
-          return hljs.highlight(code, { language: lang }).value;
-        } catch (err) {
-          console.warn('Syntax highlighting failed:', err);
+      if (typeof hljs !== 'undefined') {
+        if (lang && hljs.getLanguage(lang)) {
+          try {
+            return hljs.highlight(code, { language: lang }).value;
+          } catch (err) {
+            console.warn('Syntax highlighting failed:', err);
+          }
         }
+        return hljs.highlightAuto(code).value;
       }
-      return hljs.highlightAuto(code).value;
+      return code;
     },
     breaks: true,
     gfm: true,
     tables: true,
-    sanitize: false, // We'll use DOMPurify instead for better control
+    sanitize: false,
     smartLists: true,
     smartypants: true
   });
 
-  // Parse markdown
-  let html = marked.parse(text);
-  
-  // Sanitize the HTML to prevent XSS attacks while preserving code highlighting
-  html = DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'strike', 'del', 'ins', 
-                   'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-                   'ul', 'ol', 'li', 'blockquote', 
-                   'pre', 'code', 'span',
-                   'table', 'thead', 'tbody', 'tr', 'th', 'td',
-                   'a', 'img', 'hr'],
-    ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'title', 'class', 'id'],
-    ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i
-  });
+  try {
+    // Parse markdown
+    let html = marked.parse(text);
+    
+    // Sanitize the HTML to prevent XSS attacks while preserving code highlighting
+    if (typeof DOMPurify !== 'undefined') {
+      html = DOMPurify.sanitize(html, {
+        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'strike', 'del', 'ins', 
+                       'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                       'ul', 'ol', 'li', 'blockquote', 
+                       'pre', 'code', 'span',
+                       'table', 'thead', 'tbody', 'tr', 'th', 'td',
+                       'a', 'img', 'hr'],
+        ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'title', 'class', 'id'],
+        ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i
+      });
+    }
 
-  return html;
+    return html;
+  } catch (error) {
+    console.error('Markdown parsing failed:', error);
+    return text.replace(/\n/g, '<br>');
+  }
 }
 
 // ENHANCED: Message display with system message support and syntax highlighting
