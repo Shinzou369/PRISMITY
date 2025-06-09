@@ -118,42 +118,37 @@
       const templates = [
         {
           id: "local-contractors",
-          title: "Local Contractors (Plumbers, HVAC, Electricians) Taskforce",
+          title: "🔧 Local Contractors (Plumbers, HVAC, Electricians) Taskforce",
           description:
             "An AI office assistant for tradespeople. Manages customer inquiries, appointment booking, quote follow-ups, and connects jobs to your calendar.",
-          icon: "🔧",
           tags: ["Contractors", "Scheduling", "Customer Service"],
         },
         {
           id: "tutoring-centers",
-          title: "Tutoring & Review Centers Taskforce",
+          title: "📚 Tutoring & Review Centers Taskforce",
           description:
             "An AI academic coordinator. Responds to parent/student inquiries, shares class schedules, follows up on payments, and helps fill class slots faster.",
-          icon: "📚",
           tags: ["Education", "Scheduling", "Coordination"],
         },
         {
           id: "dental-office",
-          title: "Dental Office Taskforce",
+          title: "🦷 Dental Office Taskforce",
           description:
             "An AI front desk agent. Handles appointment requests, sends reminders, reschedules visits, and answers common patient questions — automatically.",
-          icon: "🦷",
           tags: ["Healthcare", "Appointments", "Patient Care"],
         },
         {
           id: "gym-fitness",
-          title: "Gym & Fitness Center Taskforce",
+          title: "🏋️ Gym & Fitness Center Taskforce",
           description:
             "An AI membership manager. Answers new member inquiries, sends trial invites, collects feedback, and reminds leads or clients to take action.",
-          icon: "🏋️",
           tags: ["Fitness", "Membership", "Customer Engagement"],
         },
         {
           id: "massage-therapy",
-          title: "Massage Therapy Clinic Taskforce",
+          title: "💆 Massage Therapy Clinic Taskforce",
           description:
             "An AI receptionist. Books sessions, manages reminders, handles inquiries about services, and keeps your schedule filled without lifting a finger.",
-          icon: "💆",
           tags: ["Wellness", "Booking", "Customer Service"],
         },
       ];
@@ -175,15 +170,9 @@
         grid.innerHTML = templatesToRender
           .map(
             (template) => `
-        <div class="template-card" onclick="selectTemplate('${template.id}')">
-          <div class="coming-soon-overlay">Coming Soon</div>
-          <div class="card-icon">${template.icon}</div>
-          <h3 class="card-title">${template.title}</h3>
-          <p class="card-description">${template.description}</p>
-          <div class="card-tags">
-            ${template.tags.map((tag) => `<span class="tag">${tag}</span>`).join("")}
-          </div>
-          <div class="card-arrow">→</div>
+        <div class="template-card">
+          <h3>${template.title}</h3>
+          <p>${template.description}</p>
         </div>
       `,
           )
