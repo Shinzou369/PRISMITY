@@ -39,8 +39,8 @@ passport.deserializeUser((user, done) => {
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: "https://prismity.onrender.com/auth/google/callback"
-  
+  //callbackURL: "https://prismity.onrender.com/auth/google/callback"
+  callbackURL: "/auth/google/callback"
 },
 (accessToken, refreshToken, profile, done) => {
   return done(null, profile);
@@ -141,6 +141,12 @@ app.post('/chat', async (req, res) => {
     }
 
     const data = await response.json();
+
+    // Increment prompt count for authenticated users
+    if (req.isAuthenticated()) {
+      incrementUserPromptCount(req.user.id);
+    }
+
     res.json({
       message: data.choices[0].message,
       thread_id,
@@ -354,6 +360,111 @@ app.get("/api/auth/status", (req, res) => {
   });
 });
 
+// Token usage management
+const tokenUsageFile = 'token_usage.json';
+
+function loadTokenUsage() {
+  try {
+    if (fs.existsSync(tokenUsageFile)) {
+      return JSON.parse(fs.readFileSync(tokenUsageFile, 'utf8'));
+    }
+  } catch (err) {
+    console.error('Error loading token usage:', err);
+  }
+  return {};
+}
+
+function saveTokenUsage(tokenUsage) {
+  try {
+    fs.writeFileSync(tokenUsageFile, JSON.stringify(tokenUsage, null, 2));
+  } catch (err) {
+    console.error('Error saving token usage:', err);
+  }
+}
+
+function getUserTokenUsage(userId) {
+  const tokenUsage = loadTokenUsage();
+  return tokenUsage[userId] || { tokens: 0, prompts: 0 };
+}
+
+function updateUserTokenUsage(userId, usage) {
+  const tokenUsage = loadTokenUsage();
+  tokenUsage[userId] = usage;
+  saveTokenUsage(tokenUsage);
+}
+
+function incrementUserPromptCount(userId) {
+  const tokenUsage = loadTokenUsage();
+  const currentUsage = tokenUsage[userId] || { tokens: 0, prompts: 0 };
+  currentUsage.prompts = (currentUsage.prompts || 0) + 1;
+  tokenUsage[userId] = currentUsage;
+  saveTokenUsage(tokenUsage);
+}
+
+// Token usage API endpoints
+app.get("/api/token-usage", (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+  
+  const userId = req.user.id;
+  const usage = getUserTokenUsage(userId);
+  
+  // Handle both old format (number) and new format (object)
+  if (typeof usage === 'number') {
+    res.json({ usage: { tokens: usage, prompts: 0 } });
+  } else {
+    res.json({ usage });
+  }
+});
+
+app.post("/api/token-usage", (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+  
+  const userId = req.user.id;
+  const { usage } = req.body;
+  
+  updateUserTokenUsage(userId, usage);
+  res.json({ success: true, usage });
+});
+
+app.post("/api/token-usage/increment", (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+  
+  const userId = req.user.id;
+  const currentUsage = getUserTokenUsage(userId);
+  
+  // Handle both old format (number) and new format (object)
+  let newUsage;
+  if (typeof currentUsage === 'number') {
+    newUsage = { tokens: currentUsage + 1, prompts: 0 };
+  } else {
+    newUsage = { 
+      tokens: (currentUsage.tokens || 0) + 1, 
+      prompts: currentUsage.prompts || 0 
+    };
+  }
+  
+  updateUserTokenUsage(userId, newUsage);
+  res.json({ success: true, usage: newUsage });
+});
+
+app.post("/api/token-usage/increment-prompt", (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+  
+  const userId = req.user.id;
+  incrementUserPromptCount(userId);
+  const currentUsage = getUserTokenUsage(userId);
+  
+  res.json({ success: true, usage: currentUsage });
+});
+
 // Thread management API endpoints
 app.get("/api/threads", (req, res) => {
   if (!req.isAuthenticated()) {
@@ -536,6 +647,11 @@ app.get("/login", (req, res) => {
 // Serve the frontend
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// Serve token dashboard
+app.get("/token-dashboard", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "token-dashboard.html"));
 });
 
 // Model configuration endpoints
